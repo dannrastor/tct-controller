@@ -14,7 +14,7 @@ class Oscilloscope:
         except Exception:
             print('Failed to connect to oscilloscope!')
 
-        self.scope.timeout = 5000
+        self.scope.timeout = 25000
 
         try:
             self.scope.write('*IDN?')
@@ -24,6 +24,7 @@ class Oscilloscope:
             print('Failed to get response from the scope!')
 
     def __del__(self):
+        print('Closing connection!')
         self.scope.close()
 
     def calibrate(self):
@@ -31,3 +32,8 @@ class Oscilloscope:
         self.scope.write('*CAL?')
         msg = self.scope.read()
         print(msg.rstrip())
+
+    def screenshot(self):
+        self.scope.write("HCSU DEV, PNG, FORMAT, LANDSCAPE, BCKG, WHITE, DEST, REMOTE, PORT, NET, AREA, GRIDAREAONLY")
+        self.scope.write("SCDP")
+        return self.scope.read_raw()

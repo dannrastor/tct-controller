@@ -41,3 +41,8 @@ class Oscilloscope:
         self.scope.write("HCSU DEV, PNG, FORMAT, LANDSCAPE, BCKG, WHITE, DEST, REMOTE, PORT, NET, AREA, GRIDAREAONLY")
         self.scope.write("SCDP")
         return self.scope.read_raw()
+
+    def get_wf_string(self, ch):
+        self.scope.write(f'C{ch}:INSP? "SIMPLE"')
+        data = self.scope.read()
+        return data

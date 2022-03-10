@@ -12,7 +12,8 @@ class Oscilloscope:
         try:
             self.scope = rm.open_resource(f'TCPIP0::{scope_ip}::INSTR')
         except Exception:
-            print('Failed to connect to oscilloscope!')
+            print('Failed to connect to oscilloscope, aborting!')
+            exit()
 
         self.scope.timeout = 25000
 
@@ -23,9 +24,11 @@ class Oscilloscope:
         except Exception:
             print('Failed to get response from the scope!')
 
+
     def __del__(self):
-        print('Closing connection!')
-        self.scope.close()
+        if hasattr(self, 'scope'):
+            print('Closing connection!')
+            self.scope.close()
 
     def calibrate(self):
         print('Calibration: ', end='')
@@ -34,6 +37,7 @@ class Oscilloscope:
         print(msg.rstrip())
 
     def screenshot(self):
+        """Capture screen and return raw PNG contents"""
         self.scope.write("HCSU DEV, PNG, FORMAT, LANDSCAPE, BCKG, WHITE, DEST, REMOTE, PORT, NET, AREA, GRIDAREAONLY")
         self.scope.write("SCDP")
         return self.scope.read_raw()

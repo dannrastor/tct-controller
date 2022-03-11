@@ -30,7 +30,11 @@ def save_screenshot(path):
 
 if __name__ == '__main__':
     lecroy = Oscilloscope()
-    save_screenshot("/home/drastorg/Desktop/lecroy_screenshot.png")
-    draw_wf_plots()
+    # save_screenshot("/home/drastorg/Desktop/lecroy_screenshot.png")
+    with open('/home/drastorg/Desktop/binary_wf/data.bin', 'wb') as binary_file:
+        bytes = lecroy.get_wf_bin(1)
+        start = bytes.find(b'WAVEDESC')
+        binary_file.write(bytes[start:])
+    # draw_wf_plots()
 
 

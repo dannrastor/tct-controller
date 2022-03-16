@@ -67,29 +67,22 @@ class Oscilloscope:
     def parse_binary_wf(self, msg):
         """
         Extract and scale the data from the binary format.
+        Binary layout explanation could be obtained from the device with TMPL? query.
+        Waveform metadata in human-readable form can also be obtained with INSP? WAVEDESC query.
         """
 
-        # find the header
+        # crop the crap from the start of the binary
+        # actual data starts from 'WAVEDESC'
+
         start = msg.find(b'WAVEDESC')
         msg = msg[start:]
 
         # extract the number of elements in the binary data
-        nb_byte_1 = numpy.fromstring(msg[60:64], dtype=numpy.uint32)
-        nb_byte_2 = numpy.fromstring(msg[64:68], dtype=numpy.uint32)
-        n_start = numpy.fromstring(msg[124:128], dtype=numpy.uint32)
-        n_first = numpy.fromstring(msg[132:136], dtype=numpy.uint32)
-        n_end = numpy.fromstring(msg[128:132], dtype=numpy.uint32)
-        n_sparse = numpy.fromstring(msg[136:140], dtype=numpy.uint32)
+        nb_bytes = numpy.fromstring(msg[60:68], dtype=numpy.uint64)
 
-        # check the number of elements
-        # assert nb_byte_2 == 0, "invalid array"
-        # assert n_start == 0, "invalid array"
-        # assert n_first == 0, "invalid array"
-        # assert (nb_byte_1 % 2) == 0, "invalid array"
-        # assert (nb_byte_1 / 2) == numpy.floor(n_end / n_sparse) + 1, "invalid array"
 
         # extract the scaling and offset information
-        nb = int(nb_byte_1 / 2)
+        nb = int(nb_bytes / 2)
         v_gain = numpy.fromstring(msg[156:160], dtype=numpy.float32)
         v_offset = numpy.fromstring(msg[160:164], dtype=numpy.float32)
         t_gain = numpy.fromstring(msg[176:180], dtype=numpy.float32)
@@ -102,7 +95,7 @@ class Oscilloscope:
 
         # extract the time data, scale, and offset
         t = numpy.arange(nb, dtype=numpy.float)
-        t *= (t_gain * n_sparse)
+        t *= t_gain
         t += t_offset
 
         # return the data

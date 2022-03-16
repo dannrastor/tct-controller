@@ -20,6 +20,17 @@ def draw_wf_plots():
         st = lecroy.get_wf_string(ch)
         data = parse_wf_string(st)
         plt.plot(np.arange(data.shape[0]), data)
+    plt.grid()
+    plt.show()
+
+def draw_bin_plots():
+    for ch in range(1, 4):
+        st = lecroy.get_wf_bin(ch)
+        nb, t, v = lecroy.parse_binary_wf(st)
+        if ch == 3:
+            v /= 10
+        plt.plot(t/(1e-9), v)
+    plt.grid()
     plt.show()
 
 def save_screenshot(path):
@@ -31,10 +42,10 @@ def save_screenshot(path):
 if __name__ == '__main__':
     lecroy = Oscilloscope()
     # save_screenshot("/home/drastorg/Desktop/lecroy_screenshot.png")
-    with open('/home/drastorg/Desktop/binary_wf/data.bin', 'wb') as binary_file:
-        bytes = lecroy.get_wf_bin(1)
-        start = bytes.find(b'WAVEDESC')
-        binary_file.write(bytes[start:])
-    # draw_wf_plots()
+    # with open('/home/drastorg/Desktop/binary_wf/data.bin', 'wb') as binary_file:
+    #     bytes = lecroy.get_wf_bin(1)
+    #     start = bytes.find(b'WAVEDESC')
+    #     binary_file.write(bytes[start:])
+    draw_bin_plots()
 
 

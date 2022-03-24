@@ -52,11 +52,11 @@ class Oscilloscope:
 
     def get_wf_bin(self, ch):
 
-        self.scope.write(f'C{ch}:INSP? "WAVEDESC"')
-        print(self.scope.read())
-
-        self.scope.write('TMPL?')
-        print(self.scope.read())
+        # self.scope.write(f'C{ch}:INSP? "WAVEDESC"')
+        # print(self.scope.read())
+        #
+        # self.scope.write('TMPL?')
+        # print(self.scope.read())
 
         self.scope.write('WFSU SP, 0, NP, 0, FP, 0, SN, 0')
         self.scope.write(f'C{ch}:WF?')

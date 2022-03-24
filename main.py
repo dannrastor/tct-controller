@@ -1,6 +1,7 @@
 from instruments.oscilloscope import Oscilloscope
 
 import itertools
+import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -38,6 +39,18 @@ def save_screenshot(path):
     with open(path, "wb") as binary_file:
         binary_file.write(bytes)
 
+def idiot_series():
+    path = '/home/drastorg/Desktop/laser_pulse/filter/'
+    while True:
+        dac_value = input('Input DAC value: ')
+        fp = path + dac_value + '.pickle'
+        data1 = lecroy.parse_binary_wf(lecroy.get_wf_bin(1))
+        data3 = lecroy.parse_binary_wf(lecroy.get_wf_bin(3))
+        oh = (data1, data3)
+        with open(fp, 'wb') as f:
+            pickle.dump(oh, f)
+
+
 
 if __name__ == '__main__':
     lecroy = Oscilloscope()
@@ -46,6 +59,7 @@ if __name__ == '__main__':
     #     bytes = lecroy.get_wf_bin(1)
     #     start = bytes.find(b'WAVEDESC')
     #     binary_file.write(bytes[start:])
-    draw_bin_plots()
+    # draw_bin_plots()
+    idiot_series()
 
 

@@ -1,7 +1,8 @@
 from instruments.oscilloscope import Oscilloscope
 from instruments.temperature import TemperatureSensor
-from instruments.motors.test import Motors
+from instruments.motors.motor_controller import Motors
 
+import time
 import itertools
 import pickle
 import numpy as np
@@ -58,4 +59,9 @@ import matplotlib.pyplot as plt
 if __name__ == '__main__':
     motors = Motors()
     motors.calibrate()
+    motors.get_position('y')
+    motors.move_abs('y', 40000, 0)
+    motors.get_position('y')
+    motors.move_abs('y', 0, 0)
+
 

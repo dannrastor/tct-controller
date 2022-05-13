@@ -1,3 +1,5 @@
+from instruments.motors.pyximc import  *
+
 def set_profile_8MT30_50(lib, id):
     worst_result = Result.Ok
     result = Result.Ok

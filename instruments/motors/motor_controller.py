@@ -2,8 +2,6 @@ from instruments.motors.pyximc import *
 from instruments.motors.stage_config import set_profile_8MT30_50, Result
 import time
 
-
-
 sn_to_axis = {31015: 'x', 31016: 'y', 30954: 'z'}
 
 
@@ -19,18 +17,19 @@ class Motors:
 
     def __init__(self):
 
+        self.ximc = ximc_shared_lib()
         self.ids = {}
-        devenum = lib.enumerate_devices(EnumerateFlags.ENUMERATE_PROBE, '')
-        dev_count = lib.get_device_count(devenum)
-        print(f'Device count: {lib.get_device_count(devenum)}')
+        devenum = self.ximc.enumerate_devices(EnumerateFlags.ENUMERATE_PROBE, '')
+        dev_count = self.ximc.get_device_count(devenum)
+        print(f'Device count: {self.ximc.get_device_count(devenum)}')
 
         for dev_ind in range(0, dev_count):
-            dev_name = lib.get_device_name(devenum, dev_ind)
-            device_id = lib.open_device(dev_name)
-            set_profile_8MT30_50(lib, device_id)
+            dev_name = self.ximc.get_device_name(devenum, dev_ind)
+            device_id = self.ximc.open_device(dev_name)
+            set_profile_8MT30_50(self.ximc, device_id)
 
             sn = c_uint()
-            lib.get_serial_number(device_id, byref(sn))
+            self.ximc.get_serial_number(device_id, byref(sn))
             sn = sn.value
             print(f'Found stage {dev_name.decode()} ', end='')
             print(f'SN:{sn} ', end='')
@@ -42,20 +41,19 @@ class Motors:
     def calibrate(self):
         print('Calibrating motors: ', end='')
         for device_id in self.ids.values():
-            lib.command_home(device_id)
-            # lib.command_move(id, 1000, 0)
+            self.ximc.command_home(device_id)
         for device_id in self.ids.values():
-            lib.command_wait_for_stop(device_id, 10)
+            self.ximc.command_wait_for_stop(device_id, 10)
 
         time.sleep(1)
 
         for device_id in self.ids.values():
-            lib.command_zero(device_id)
+            self.ximc.command_zero(device_id)
         print('OK')
 
     def get_position(self, axis):
         pos = get_position_t()
-        lib.get_position(self.ids[axis], byref(pos))
+        self.ximc.get_position(self.ids[axis], byref(pos))
         return pos.Position, pos.uPosition
 
     def print_positions(self, units='mm'):
@@ -70,16 +68,15 @@ class Motors:
                 print(f'{steps_to_mm(*pos)}mm ', end='')
         print()
 
-
     def move_abs(self, axis, steps, usteps):
         if steps > 40000:
             steps, usteps = 40000, 0
         if steps < 0:
             steps, usteps = 0, 0
 
-        lib.command_move(self.ids[axis], steps, usteps)
-        lib.command_wait_for_stop(self.ids[axis], 10)
+        self.ximc.command_move(self.ids[axis], steps, usteps)
+        self.ximc.command_wait_for_stop(self.ids[axis], 10)
 
     def move_rel(self, axis, steps, usteps):
-        lib.command_movr(self.ids[axis], steps, usteps)
-        lib.command_wait_for_stop(self.ids[axis], 10)
+        self.ximc.command_movr(self.ids[axis], steps, usteps)
+        self.ximc.command_wait_for_stop(self.ids[axis], 10)

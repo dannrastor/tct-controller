@@ -56,7 +56,6 @@ class Oscilloscope:
         data = self.scope.read_raw()
         return data
 
-
     def parse_text_waveform(self, text_waveform):
         """
         Parse INSPECT SIMPLE output

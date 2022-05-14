@@ -1,38 +1,40 @@
+import pyvisa
+
 from instruments.oscilloscope import Oscilloscope
 from instruments.temperature import TemperatureSensor
 from instruments.motors.motor_controller import Motors
 
+import pyvisa
 import time
 import os
-import itertools
 import pickle
-import numpy as np
+import numpy
 import matplotlib.pyplot as plt
 
 
-def parse_wf_string(st):
-    """Convert INSPECT query output to numpy array"""
-    st = st.split('\r\n')
-    st = st[1:-1]
-    st = [item.split() for item in st]
-    st = list(itertools.chain.from_iterable(st))
-    return np.array([float(i) for i in st])
+class TCTController():
+
+    def __init__(self):
+        self.resource_manager = pyvisa.ResourceManager()
+
+        self.motors = None
+        self.oscilloscope = None
+        self.temperature = None
+
+        self.measurement_running = False
+
+        self.connect_oscilloscope()
+
+    def connect_oscilloscope(self):
+        try:
+            self.oscilloscope = Oscilloscope(self.resource_manager)
+        except Exception:
+            pass
+
+        self.oscilloscope.calibrate()
 
 
-def draw_wf_plots():
-    """Run INSPECT queries for channels and plot the data"""
-    for ch in range(1, 4):
-        st = lecroy.get_wf_string(ch)
-        data = parse_wf_string(st)
-        plt.plot(np.arange(data.shape[0]), data)
-    plt.grid()
-    plt.show()
 
-
-def save_screenshot(path):
-    bytes = lecroy.screenshot()
-    with open(path, "wb") as binary_file:
-        binary_file.write(bytes)
 
 
 def idiot_series():
@@ -40,8 +42,8 @@ def idiot_series():
     while True:
         dac_value = input('Input DAC value: ')
         fp = path + dac_value + '.pickle'
-        data1 = lecroy.parse_binary_wf(lecroy.get_wf_bin(1))
-        data3 = lecroy.parse_binary_wf(lecroy.get_wf_bin(3))
+        data1 = lecroy.parse_raw_waveform(lecroy.get_raw_waveform(1))
+        data3 = lecroy.parse_raw_waveform(lecroy.get_raw_waveform(3))
         oh = (data1, data3)
         with open(fp, 'wb') as f:
             pickle.dump(oh, f)
@@ -67,7 +69,7 @@ def scan_motors():
             motors.print_positions('steps')
 
             time.sleep(1)
-            data = lecroy.parse_binary_wf(lecroy.get_wf_bin(2))
+            data = lecroy.parse_raw_waveform(lecroy.get_raw_waveform(2))
 
             result[z][x] = data
 

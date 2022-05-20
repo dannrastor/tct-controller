@@ -55,7 +55,16 @@ class Motors:
     def get_position(self, axis):
         pos = get_position_t()
         ximc.get_position(self.ids[axis], byref(pos))
-        return pos.Position, pos.uPosition
+        return pos.Position
+
+    def is_moving(self, axis):
+        status = status_t()
+        ximc.get_status(self.ids[axis], byref(status))
+
+        if status.MoveSts == 0:
+            return False
+        else:
+            return True
 
     def print_positions(self, units='steps'):
         for axis in sorted(self.ids.keys()):
@@ -69,15 +78,11 @@ class Motors:
                 print(f'{steps_to_mm(*pos)}mm ', end='')
         print()
 
-    def move_abs(self, axis, steps, usteps):
-        if steps > 40000:
-            steps, usteps = 40000, 0
-        if steps < 0:
-            steps, usteps = 0, 0
+    def move_abs(self, axis, steps):
+        steps = min(40000, steps)
+        steps = max(0, steps)
+        ximc.command_move(self.ids[axis], steps, 0)
 
-        ximc.command_move(self.ids[axis], steps, usteps)
-        ximc.command_wait_for_stop(self.ids[axis], 10)
-
-    def move_rel(self, axis, steps, usteps):
-        ximc.command_movr(self.ids[axis], steps, usteps)
-        ximc.command_wait_for_stop(self.ids[axis], 10)
+    def move_rel(self, axis, steps):
+        dest = steps + self.get_position(axis)
+        self.move_abs(axis, dest)

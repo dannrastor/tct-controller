@@ -5,7 +5,6 @@ import time
 sn_to_axis = {31015: 'x', 31016: 'y', 30954: 'z'}
 
 
-
 def steps_to_mm(steps, usteps):
     return (steps + float(usteps) / 256.0) * 1.25 / 1000
 
@@ -13,7 +12,6 @@ def steps_to_mm(steps, usteps):
 def mm_to_steps(mm):
     mm = int(mm / 1.25 * 1000 * 256)
     return mm // 256, mm % 256
-
 
 
 class Motors:
@@ -37,7 +35,6 @@ class Motors:
             self.ids[sn_to_axis[sn]] = device_id
             print(f'ID:{device_id}')
             print(f'This is axis {sn_to_axis[sn]}')
-
 
     def calibrate(self):
         print('Calibrating motors: ', end='')

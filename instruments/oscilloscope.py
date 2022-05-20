@@ -27,6 +27,7 @@ class Oscilloscope:
             raise
 
         self.scope.write('CFMT DEF9, WORD, BIN')  # set proper byte count for DAQ
+        self.cached_waveform = None
 
     def __del__(self):
         if hasattr(self, 'scope'):
@@ -39,24 +40,30 @@ class Oscilloscope:
         msg = self.scope.read()
         print(msg.rstrip())
 
+    def get_waveform(self, ch):
+        raw_wf = self._get_raw_waveform(ch)
+        data = self._parse_raw_waveform(raw_wf)
+        self.cached_waveform = data
+        return data
+
     def get_raw_screenshot(self):
         """Capture screen and return raw PNG contents"""
         self.scope.write("HCSU DEV, PNG, FORMAT, LANDSCAPE, BCKG, WHITE, DEST, REMOTE, PORT, NET, AREA, GRIDAREAONLY")
         self.scope.write("SCDP")
         return self.scope.read_raw()
 
-    def get_text_waveform(self, ch):
+    def _get_text_waveform(self, ch):
         self.scope.write(f'C{ch}:INSP? "SIMPLE"')
         data = self.scope.read()
         return data
 
-    def get_raw_waveform(self, ch):
+    def _get_raw_waveform(self, ch):
         self.scope.write('WFSU SP, 0, NP, 0, FP, 0, SN, 0')
         self.scope.write(f'C{ch}:WF?')
         data = self.scope.read_raw()
         return data
 
-    def parse_text_waveform(self, text_waveform):
+    def _parse_text_waveform(self, text_waveform):
         """
         Parse INSPECT SIMPLE output
         Returns numpy array of voltage values
@@ -68,7 +75,7 @@ class Oscilloscope:
         text_waveform = list(itertools.chain.from_iterable(text_waveform))
         return numpy.array([float(i) for i in text_waveform])
 
-    def parse_raw_waveform(self, msg):
+    def _parse_raw_waveform(self, msg):
         """
         Extract and scale the data from the binary format.
         Binary layout explanation could be obtained from the device with TMPL? query.

@@ -23,6 +23,7 @@ def ximc_shared_lib():
         return None
 
 
+ximc = ximc_shared_lib()
 # Common declarations
 
 class Result:
@@ -59,8 +60,8 @@ class device_network_information_t(LittleEndianStructure):
 
 # Clarify function types
 
-lib.enumerate_devices.restype = POINTER(device_enumeration_t)
-lib.get_device_name.restype = c_char_p
+ximc.enumerate_devices.restype = POINTER(device_enumeration_t)
+ximc.get_device_name.restype = c_char_p
 
 
 # ---------------------------

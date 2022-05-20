@@ -23,7 +23,7 @@ class TctGui(QMainWindow):
 
         self.tabs = QTabWidget()
         self.create_monitoring_tab()
-        self.tabs.addTab(QLabel('nothing here'), 'Measurements')
+        self.create_measurement_tab()
         self.tabs.addTab(QLabel('nothing here'), 'Log')
 
         self.setCentralWidget(self.tabs)
@@ -41,8 +41,14 @@ class TctGui(QMainWindow):
         tab = QWidget()
         tab.setLayout(layout)
 
-        self.monitoring_tab = tab
+        # self.monitoring_tab = tab
         self.tabs.addTab(tab, 'Monitoring')
+
+    def create_measurement_tab(self):
+        tab = QPushButton('Test')
+        tab.clicked.connect(core.motor_scan)
+        self.tabs.addTab(tab, 'Measurements')
+
 
 
 class MotorStatus(QGroupBox):

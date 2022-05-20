@@ -76,6 +76,7 @@ class Motors:
         print()
 
     def move_abs(self, axis, steps):
+        print(f'requested {axis} {steps}')
         steps = min(40000, steps)
         steps = max(0, steps)
         ximc.command_move(self.ids[axis], steps, 0)
@@ -83,3 +84,7 @@ class Motors:
     def move_rel(self, axis, steps):
         dest = steps + self.get_position(axis)
         self.move_abs(axis, dest)
+
+    def wait_for_stop(self):
+        for id in self.ids:
+            ximc.command_wait_for_stop(id, 50)

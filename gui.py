@@ -24,6 +24,7 @@ class TctGui(QMainWindow):
         self.tabs = QTabWidget()
         self.create_monitoring_tab()
         self.create_measurement_tab()
+
         self.tabs.addTab(QLabel('nothing here'), 'Log')
 
         self.setCentralWidget(self.tabs)
@@ -128,12 +129,4 @@ class WaveformPlot(QGroupBox):
 
     def fetch(self):
         core.oscilloscope.get_waveform(2)
-
-
-
-if __name__ == '__main__':
-
-    app = QApplication([])
-    gui = TctGui()
-
-    sys.exit(app.exec())
+        self.refresh()

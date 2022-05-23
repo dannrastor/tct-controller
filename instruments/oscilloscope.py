@@ -5,9 +5,6 @@ import itertools
 scope_ip = '169.254.40.151'
 
 
-# FIXME: hardcoded ip
-# FIXME: now it creates separate instance of ResourceManager
-
 class Oscilloscope:
     def __init__(self, resource_manager):
         try:

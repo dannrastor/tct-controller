@@ -18,14 +18,24 @@ class Motors:
 
     def __init__(self):
         self.ids = {}
-        devenum = ximc.enumerate_devices(EnumerateFlags.ENUMERATE_PROBE, '')
-        dev_count = ximc.get_device_count(devenum)
-        print(f'Device count: {ximc.get_device_count(devenum)}')
 
-        for dev_ind in range(0, dev_count):
-            dev_name = ximc.get_device_name(devenum, dev_ind)
-            device_id = ximc.open_device(dev_name)
-            set_profile_8MT30_50(ximc, device_id)
+        try:
+            devenum = ximc.enumerate_devices(EnumerateFlags.ENUMERATE_PROBE, '')
+            dev_count = ximc.get_device_count(devenum)
+            print(f'Device count: {ximc.get_device_count(devenum)}')
+        except Exception:
+            print('Failed to connect to stage controller')
+            raise
+
+        for dev_ind in range(dev_count):
+
+            try:
+                dev_name = ximc.get_device_name(devenum, dev_ind)
+                device_id = ximc.open_device(dev_name)
+                set_profile_8MT30_50(ximc, device_id)
+            except Exception:
+                print('Failed to open ximc device')
+                raise
 
             sn = c_uint()
             ximc.get_serial_number(device_id, byref(sn))
@@ -36,7 +46,14 @@ class Motors:
             print(f'ID:{device_id}')
             print(f'This is axis {sn_to_axis[sn]}')
 
+    def __del__(self):
+        for device_id in self.ids.values():
+            ximc.close_device(byref(cast(device_id, POINTER(c_int))))
+
     def calibrate(self):
+        """
+        Move all stages to low limit switch and set zero there
+        """
         print('Calibrating motors: ', end='')
         for device_id in self.ids.values():
             ximc.command_home(device_id)
@@ -47,11 +64,12 @@ class Motors:
 
         for device_id in self.ids.values():
             ximc.command_zero(device_id)
-        print('OK')
+        print('Done')
 
     def get_position(self, axis):
         pos = get_position_t()
         ximc.get_position(self.ids[axis], byref(pos))
+        # microsteps ignored
         return pos.Position
 
     def is_moving(self, axis):
@@ -76,9 +94,15 @@ class Motors:
         print()
 
     def move_abs(self, axis, steps):
+        """
+        Request absolute movement of the stage.
+        If requested position is beyond physical limits, move to that limit instead.
+        """
+
         print(f'requested {axis} {steps}')
         steps = min(40000, steps)
         steps = max(0, steps)
+        # microsteps ignored
         ximc.command_move(self.ids[axis], steps, 0)
 
     def move_rel(self, axis, steps):
@@ -86,5 +110,6 @@ class Motors:
         self.move_abs(axis, dest)
 
     def wait_for_stop(self):
+        # HANGS EXECUTION, NOT FOR USE IN GUI THREAD
         for id in self.ids:
             ximc.command_wait_for_stop(id, 50)

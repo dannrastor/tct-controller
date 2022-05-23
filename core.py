@@ -30,17 +30,17 @@ class TCTController(QObject):
 
     def motor_scan(self):
         self.thread = QThread()
-        self.worker = MotorScan(self)
+        self.worker = MotorScan()
         self.worker.moveToThread(self.thread)
         self.thread.started.connect(self.worker.run)
         self.worker.finished.connect(self.thread.quit)
         self.worker.finished.connect(self.worker.deleteLater)
         self.thread.finished.connect(self.thread.deleteLater)
-        # Step 6: Start the thread
+
         self.thread.start()
 
 
-# core = TCTController()
+core = TCTController()
 
 
 class MotorScan(QObject):
@@ -57,12 +57,14 @@ class MotorScan(QObject):
                 core.motors_running.lock()
                 core.motors.move_abs('x', x)
                 core.motors.move_abs('y', y)
-                while core.motors.is_moving('x'):
-                    print('x not ready')
-                    time.sleep(1)
-                while core.motors.is_moving('y'):
-                    print('y not ready')
-                    time.sleep(1)
+
+                # Delay between move command and state check is crucial, check fails otherwise
+                # Controller response time is ~10 ms
+
+                time.sleep(0.05)
+                while core.motors.is_moving('x') or core.motors.is_moving('y'):
+                    time.sleep(0.05)
                 core.motors_running.unlock()
+
                 core.oscilloscope.get_waveform(2)
         self.finished.emit()

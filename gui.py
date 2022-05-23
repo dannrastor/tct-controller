@@ -41,7 +41,7 @@ class TctGui(QMainWindow):
         tab = QWidget()
         tab.setLayout(layout)
 
-        # self.monitoring_tab = tab
+        self.monitoring_tab = tab
         self.tabs.addTab(tab, 'Monitoring')
 
     def create_measurement_tab(self):
@@ -80,7 +80,7 @@ class MotorStatus(QGroupBox):
 
         self.timer = QTimer()
         self.timer.timeout.connect(self.refresh)
-        self.timer.start(100)
+        self.timer.start(10)
 
     def refresh(self):
         pos = core.motors.get_position(self.axis)
@@ -132,7 +132,6 @@ class WaveformPlot(QGroupBox):
 
 
 if __name__ == '__main__':
-    core = TCTController()
 
     app = QApplication([])
     gui = TctGui()

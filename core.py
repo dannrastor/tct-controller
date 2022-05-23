@@ -33,12 +33,12 @@ class TCTController(QObject):
         # fixme
         self.motors_running = QMutex()
 
-    def motor_scan(self):
+    def motor_scan(self, settings):
         """
         Launch measurement thread
         """
         self.thread = QThread()
-        self.worker = MotorScan()
+        self.worker = MotorScan(settings)
         self.worker.moveToThread(self.thread)
         self.worker.progress_tick.connect(self.update_progress)
         self.thread.started.connect(self.worker.run)
@@ -59,27 +59,31 @@ class MotorScan(QObject):
     finished = pyqtSignal()
     progress_tick = pyqtSignal(int, int)
 
-    def __init__(self):
+    def __init__(self, settings):
         super().__init__()
+        self.settings = settings
 
     def run(self):
-        for x in range(0, 10000, 1000):
-            for y in range(0, 10000, 1000):
-                print(x, y)
-                core.motors_running.lock()
-                core.motors.move_abs('x', x)
-                core.motors.move_abs('y', y)
 
-                # Delay between move command and state check is crucial, the latter fails otherwise
-                # Controller response time is several ms
+        for x in range(*self.settings['xrange']):
+            for y in range(*self.settings['yrange']):
+                for z in range(*self.settings['zrange']):
 
-                time.sleep(0.05)
-                while core.motors.is_moving('x') or core.motors.is_moving('y'):
+                    core.motors_running.lock()
+                    core.motors.move_abs('x', x)
+                    core.motors.move_abs('y', y)
+                    core.motors.move_abs('z', z)
+
+                    # Delay between move command and state check is crucial, the latter fails otherwise
+                    # Controller response time is several ms
+
                     time.sleep(0.05)
-                core.motors_running.unlock()
+                    while core.motors.is_moving('x') or core.motors.is_moving('y') or core.motors.is_moving('z'):
+                        time.sleep(0.05)
+                    core.motors_running.unlock()
 
-                time.sleep(0.5)
+                    time.sleep(1)
 
-                core.oscilloscope.get_waveform(2)
-                self.progress_tick.emit(x, y)
+                    core.oscilloscope.get_waveform(2)
+                    self.progress_tick.emit(x, y)
         self.finished.emit()

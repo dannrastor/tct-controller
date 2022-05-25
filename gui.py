@@ -26,31 +26,31 @@ class TctGui(QMainWindow):
         self.setWindowIcon(QIcon('./icon.png'))
 
         self.tabs = QTabWidget()
-        self.create_monitoring_tab()
+        self.create_hardware_tab()
 
-        self.tabs.addTab(MeasurementGUI(), 'Measurements')
+        self.tabs.addTab(MeasurementControlWidget(), 'Measurements')
         self.tabs.addTab(QLabel('nothing here'), 'Log')
 
         self.setCentralWidget(self.tabs)
 
         self.show()
 
-    def create_monitoring_tab(self):
+    def create_hardware_tab(self):
         layout = QVBoxLayout()
-        layout.addWidget(WaveformPlot())
+        layout.addWidget(ScopeControlWidget())
 
-        layout.addWidget(MotorStatus('x'))
-        layout.addWidget(MotorStatus('y'))
-        layout.addWidget(MotorStatus('z'))
+        layout.addWidget(MotorControlWidget('x'))
+        layout.addWidget(MotorControlWidget('y'))
+        layout.addWidget(MotorControlWidget('z'))
 
         tab = QWidget()
         tab.setLayout(layout)
 
         self.monitoring_tab = tab
-        self.tabs.addTab(tab, 'Monitoring')
+        self.tabs.addTab(tab, 'Hardware & Manual control')
 
 
-class MotorStatus(QGroupBox):
+class MotorControlWidget(QGroupBox):
     """
     Group of widgets for manual control and status display of a single stage
     """
@@ -68,9 +68,9 @@ class MotorStatus(QGroupBox):
         self.spinbox = QSpinBox()
         self.spinbox.setRange(-40000, 40000)
 
-        self.move_abs_button = QPushButton('Move absolute')
+        self.move_abs_button = AutoDisablingButton('Move absolute')
         self.move_abs_button.clicked.connect(self.request_abs_move)
-        self.move_rel_button = QPushButton('Move relative')
+        self.move_rel_button = AutoDisablingButton('Move relative')
         self.move_rel_button.clicked.connect(self.request_rel_move)
 
         layout.addWidget(self.name_label)
@@ -100,7 +100,7 @@ class MotorStatus(QGroupBox):
         core.motors.move_rel(self.axis, self.spinbox.value())
 
 
-class WaveformPlot(QGroupBox):
+class ScopeControlWidget(QGroupBox):
     """
     Oscilloscope control widget
     """
@@ -113,7 +113,7 @@ class WaveformPlot(QGroupBox):
 
         self.canvas = FigureCanvasQTAgg(self.figure)
 
-        self.fetch_button = QPushButton('Fetch waveform')
+        self.fetch_button = AutoDisablingButton('Fetch waveform')
         self.fetch_button.clicked.connect(self.fetch)
 
         self.timer = QTimer()
@@ -137,7 +137,7 @@ class WaveformPlot(QGroupBox):
         self.refresh()
 
 
-class MeasurementGUI(QGroupBox):
+class MeasurementControlWidget(QGroupBox):
     """
     Contents of Measurements tab
     """
@@ -145,9 +145,9 @@ class MeasurementGUI(QGroupBox):
     def __init__(self):
         super().__init__()
         layout = QGridLayout()
-        self.run_button = QPushButton('Run measurement')
+        self.run_button = AutoDisablingButton('Run measurement')
         self.run_button.clicked.connect(self.configure_and_run)
-        self.abort_button = QPushButton('Abort')
+        self.abort_button = AutoDisablingButton('Abort', negative=True)
         self.abort_button.clicked.connect(self.abort)
         self.statusbar = QProgressBar()
         self.table = QTableWidget(6, 2)
@@ -194,14 +194,13 @@ class MeasurementGUI(QGroupBox):
         f(4, 0, 'Elapsed time')
         f(5, 0, 'Estimated time')
 
-        if core.measurement_running:
+        if core.is_measurement_running:
             f(0, 1, 'RUNNING')
             f(1, 1, 'Motor scan')  # FIXME
             ms = core.measurement_state
             f(2, 1, ms[0])
             f(3, 1, ms[1])
             elapsed_time = int(time.time()) - core.start_time
-            print(elapsed_time)
             f(4, 1, timedelta(seconds=elapsed_time))
             if ms[0]:
                 remaining_time = int(elapsed_time * (ms[1] - ms[0]) / ms[0])
@@ -292,6 +291,27 @@ class MeasurementGUI(QGroupBox):
                         'zrange': zrange,
                         'path': output_path}
             self.accept()
+
+
+class AutoDisablingButton(QPushButton):
+    """
+    Button that is disabled when a measurement is running.
+    Could be created with negative=True, so it is disabled when a measurement is NOT running.
+    Works by listening to core signals.
+    """
+    def __init__(self, text, negative=False):
+        super().__init__(text)
+        self.negative = negative
+        if negative:
+            self.setEnabled(False)
+        core.measurement_started.connect(self.on_meas)
+        core.measurement_finished.connect(self.off_meas)
+
+    def on_meas(self):
+        self.setEnabled(self.negative)
+
+    def off_meas(self):
+        self.setEnabled(not self.negative)
 
 
 if __name__ == '__main__':

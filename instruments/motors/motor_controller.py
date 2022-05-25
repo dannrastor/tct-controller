@@ -99,7 +99,7 @@ class Motors:
         If requested position is beyond physical limits, move to that limit instead.
         """
 
-        print(f'requested {axis} {steps}')
+        # print(f'requested {axis} {steps}')
         steps = min(40000, steps)
         steps = max(0, steps)
         # microsteps ignored

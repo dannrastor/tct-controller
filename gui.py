@@ -11,6 +11,8 @@ from matplotlib.figure import Figure
 
 import numpy
 import sys
+import time
+from datetime import timedelta
 import random
 
 
@@ -20,7 +22,7 @@ class TctGui(QMainWindow):
         super().__init__()
 
         self.setWindowTitle('TCT')
-        self.setGeometry(500, 300, 1000, 800)
+        self.setGeometry(500, 300, 640, 640)
         self.setWindowIcon(QIcon('./icon.png'))
 
         self.tabs = QTabWidget()
@@ -142,26 +144,76 @@ class MeasurementGUI(QGroupBox):
 
     def __init__(self):
         super().__init__()
-        layout = QVBoxLayout()
+        layout = QGridLayout()
         self.run_button = QPushButton('Run measurement')
         self.run_button.clicked.connect(self.configure_and_run)
-        self.statusbar = QLabel('Run status')
-        layout.addWidget(self.run_button)
-        layout.addWidget(self.statusbar)
+        self.abort_button = QPushButton('Abort')
+        self.abort_button.clicked.connect(self.abort)
+        self.statusbar = QProgressBar()
+        self.table = QTableWidget(6, 2)
+        self.fill_table()
+
+        layout.addWidget(self.table, 0, 0, 3, 2)
+        layout.addWidget(self.statusbar, 3, 0, 1, 2)
+        layout.addWidget(self.run_button, 4, 0, 1, 1)
+        layout.addWidget(self.abort_button, 4, 1, 1, 1)
         self.setLayout(layout)
 
         self.timer = QTimer()
         self.timer.timeout.connect(self.refresh)
-        self.timer.start(10)
+        self.timer.start(1000)
 
     def configure_and_run(self):
         dialog = self.ConfigureDialog(self)
         if dialog.exec():
             print(dialog.ret)
-            core.motor_scan(dialog.ret)
+            core.run_measurement(dialog.ret)
+
+    def abort(self):
+        dialog = QMessageBox(self)
+        dialog.setWindowTitle('Abort measurement')
+        dialog.setText('This may lead to a data loss. Abort anyway?')
+        dialog.setStandardButtons(QMessageBox.Abort | QMessageBox.Cancel)
+        if dialog.exec() == QMessageBox.Abort:
+            core.abort_measurement()
 
     def refresh(self):
-        self.statusbar.setText(str(core.measurement_state))
+        self.statusbar.setMinimum(0)
+        self.statusbar.setMaximum(core.measurement_state[1])
+        self.statusbar.setValue(core.measurement_state[0])
+        self.fill_table()
+
+    def fill_table(self):
+
+        f = lambda x, y, s: self.table.setItem(x, y, QTableWidgetItem(str(s)))
+
+        f(0, 0, 'Measurement status')
+        f(1, 0, 'Measurement type')
+        f(2, 0, 'Current step')
+        f(3, 0, 'Total steps')
+        f(4, 0, 'Elapsed time')
+        f(5, 0, 'Estimated time')
+
+        if core.measurement_running:
+            f(0, 1, 'RUNNING')
+            f(1, 1, 'Motor scan')  # FIXME
+            ms = core.measurement_state
+            f(2, 1, ms[0])
+            f(3, 1, ms[1])
+            elapsed_time = int(time.time()) - core.start_time
+            print(elapsed_time)
+            f(4, 1, timedelta(seconds=elapsed_time))
+            if ms[0]:
+                remaining_time = int(elapsed_time * (ms[1] - ms[0]) / ms[0])
+                f(5, 1, timedelta(seconds=remaining_time))
+        else:
+            f(0, 1, 'IDLE')
+            for i in range(1, 6):
+                f(i, 1, '')
+
+        self.table.horizontalHeader().setVisible(False)
+        self.table.verticalHeader().setVisible(False)
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
     class ConfigureDialog(QDialog):
 
@@ -216,7 +268,7 @@ class MeasurementGUI(QGroupBox):
             Check correctness of user input. If correct, exit dialog and store data in its self.ret attribute
             """
 
-            f = lambda x: tuple([i.value() for i in self.inputs[x:x+3]])
+            f = lambda x: tuple([i.value() for i in self.inputs[x:x + 3]])
             xrange, yrange, zrange = f(0), f(3), f(6)
             output_path = self.filename.text()
 

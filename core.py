@@ -13,6 +13,9 @@ import numpy
 
 class TCTController(QObject):
 
+    measurement_started = pyqtSignal()
+    measurement_finished = pyqtSignal()
+
     def __init__(self):
         super().__init__()
 
@@ -29,7 +32,7 @@ class TCTController(QObject):
         # FIXME replace with signals
         self.start_time = 0
         self.measurement_state = 0, 1
-        self.measurement_running = False
+        self.is_measurement_running = False
 
     def __del__(self):
         self.abort_measurement()
@@ -39,7 +42,9 @@ class TCTController(QObject):
         Launch measurement thread
         """
         print('Measurement starting')
-        self.measurement_running = True
+
+        self.measurement_started.emit()
+        self.is_measurement_running = True
 
         self.thread = QThread()
 
@@ -58,13 +63,14 @@ class TCTController(QObject):
         self.thread.start()
 
     def abort_measurement(self):
-        if hasattr(self, 'thread') and self.measurement_running:
+        if hasattr(self, 'thread') and self.is_measurement_running:
             self.finish_measurement()
             self.thread.requestInterruption()
 
     def finish_measurement(self):
         self.measurement_state = 0, 1
-        self.measurement_running = False
+        self.is_measurement_running = False
+        self.measurement_finished.emit()
 
     def update_progress(self, a, b):
         self.measurement_state = a, b

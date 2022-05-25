@@ -1,4 +1,4 @@
-from PyQt5.QtCore import QObject, QThread, pyqtSignal, QMutex
+from PyQt5.QtCore import QObject, QThread, pyqtSignal
 
 from instruments.oscilloscope import Oscilloscope
 from instruments.temperature import TemperatureSensor
@@ -92,7 +92,7 @@ class MotorScan(QObject):
 
         xrange, yrange, zrange = self.settings['xrange'], self.settings['yrange'], self.settings['zrange']
         current_steps = 0
-        total_steps = len(range(*xrange)) * len(range(*yrange)) *  len(range(*zrange))
+        total_steps = len(range(*xrange)) * len(range(*yrange)) * len(range(*zrange))
         self.progress_tick.emit(0, total_steps)
 
         for x in range(*xrange):

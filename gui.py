@@ -318,4 +318,10 @@ if __name__ == '__main__':
     app = QApplication([])
     gui = TctGui()
 
+    # A hack to make the app respond to python's KeyboardInterrupt
+    # Interpreter takes over every 500 ms (it can't handle exceptions while on Qt event loop)
+    timer = QTimer()
+    timer.start(500)
+    timer.timeout.connect(lambda: None)
+
     sys.exit(app.exec())

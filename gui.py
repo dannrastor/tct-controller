@@ -4,7 +4,6 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QTimer
 
-import core
 from core import *
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
@@ -36,6 +35,7 @@ class TctGui(QMainWindow):
 
         self.show()
 
+
     def create_hardware_tab(self):
         layout = QVBoxLayout()
         layout.addWidget(ScopeControlWidget())
@@ -48,7 +48,7 @@ class TctGui(QMainWindow):
         tab.setLayout(layout)
 
         self.monitoring_tab = tab
-        self.tabs.addTab(tab, 'Hardware & Manual control')
+        self.tabs.addTab(tab, 'Hardware + Manual control')
 
 
 class MotorControlWidget(QGroupBox):
@@ -134,7 +134,7 @@ class ScopeControlWidget(QGroupBox):
 
     def refresh(self):
         data = None
-        if core.oscilloscope is not None and core.instruments_ready:
+        if core.instruments_ready:
             data = core.oscilloscope.cached_waveform
         self.figure.clear()
         axes = self.figure.add_subplot(111)
@@ -143,7 +143,8 @@ class ScopeControlWidget(QGroupBox):
         self.canvas.draw()
 
     def fetch(self):
-        core.oscilloscope.get_waveform(2)
+        if core.instruments_ready:
+            core.oscilloscope.get_waveform(2)
         self.refresh()
 
 
@@ -155,7 +156,7 @@ class MeasurementControlWidget(QGroupBox):
     def __init__(self):
         super().__init__()
         layout = QGridLayout()
-        self.run_button = AutoDisablingButton('Run measurement')
+        self.run_button = AutoDisablingButton('Configure and run...')
         self.run_button.clicked.connect(self.configure_and_run)
         self.abort_button = AutoDisablingButton('Abort', negative=True)
         self.abort_button.clicked.connect(self.abort)
@@ -174,10 +175,11 @@ class MeasurementControlWidget(QGroupBox):
         self.timer.start(1000)
 
     def configure_and_run(self):
-        dialog = self.ConfigureDialog(self)
-        if dialog.exec():
-            print(dialog.ret)
-            core.run_measurement(dialog.ret)
+        if core.instruments_ready:
+            dialog = self.ConfigureDialog(self)
+            if dialog.exec():
+                print(dialog.ret)
+                core.run_measurement(MotorScan(settings=dialog.ret))
 
     def abort(self):
         dialog = QMessageBox(self)
@@ -206,7 +208,7 @@ class MeasurementControlWidget(QGroupBox):
 
         if core.is_measurement_running:
             f(0, 1, 'RUNNING')
-            f(1, 1, 'Motor scan')  # FIXME
+            f(1, 1, type(core.worker).__name__)  # FIXME
             ms = core.measurement_state
             f(2, 1, ms[0])
             f(3, 1, ms[1])
@@ -334,5 +336,6 @@ if __name__ == '__main__':
     timer.start(500)
     timer.timeout.connect(lambda: None)
 
-    core.connect_instruments()
+    core.run_measurement(CalibrateInstruments())
+
     sys.exit(app.exec())

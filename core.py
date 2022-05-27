@@ -20,8 +20,8 @@ class TCTController(QObject):
         super().__init__()
         self.visa_manager = pyvisa.ResourceManager()
 
-        self.oscilloscope = None
-        self.motors = None
+        self.oscilloscope = Oscilloscope(self.visa_manager)
+        self.motors = Motors()
         self.hv_source = None
         self.temperature = None
 
@@ -31,11 +31,8 @@ class TCTController(QObject):
         self.is_measurement_running = False
         self.instruments_ready = False
 
-    def connect_instruments(self):
-
-        self.oscilloscope = Oscilloscope(self.visa_manager)
-        self.motors = Motors()
-
+    def calibrate(self):
+        self.instruments_ready = False
         self.oscilloscope.calibrate()
         self.motors.calibrate()
         self.instruments_ready = True
@@ -43,7 +40,7 @@ class TCTController(QObject):
     def __del__(self):
         self.abort_measurement()
 
-    def run_measurement(self, settings):
+    def run_measurement(self, worker):
         """
         Launch measurement thread
         """
@@ -55,7 +52,7 @@ class TCTController(QObject):
         self.thread = QThread()
 
         # FiXME: allow for use of different workers
-        self.worker = MotorScan(settings)
+        self.worker = worker
 
         self.worker.moveToThread(self.thread)
         self.worker.progress_tick.connect(self.update_progress)
@@ -85,16 +82,33 @@ class TCTController(QObject):
 core = TCTController()
 
 
-class MotorScan(QObject):
-
+class AsyncRoutine(QObject):
     finished = pyqtSignal()
     progress_tick = pyqtSignal(int, int)
 
-    def __init__(self, settings):
+    def __init__(self, settings=None):
         super().__init__()
         self.settings = settings
 
     def run(self):
+        self.action()
+        self.finished.emit()
+
+    def action(self):
+        # Long task here
+        # You'd better emit progress_tick signals meanwhile
+        pass
+
+
+class CalibrateInstruments(AsyncRoutine):
+
+    def action(self):
+        core.calibrate()
+
+
+class MotorScan(AsyncRoutine):
+
+    def action(self):
 
         xrange, yrange, zrange = self.settings['xrange'], self.settings['yrange'], self.settings['zrange']
         current_steps = 0

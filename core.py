@@ -18,21 +18,27 @@ class TCTController(QObject):
 
     def __init__(self):
         super().__init__()
+        self.visa_manager = pyvisa.ResourceManager()
 
-        self.resource_manager = pyvisa.ResourceManager()
-
-        self.oscilloscope = Oscilloscope(self.resource_manager)
-        self.oscilloscope.calibrate()
-
-        self.motors = Motors()
-        self.motors.calibrate()
-
+        self.oscilloscope = None
+        self.motors = None
+        self.hv_source = None
         self.temperature = None
 
         # FIXME replace with signals
         self.start_time = 0
         self.measurement_state = 0, 1
         self.is_measurement_running = False
+        self.instruments_ready = False
+
+    def connect_instruments(self):
+
+        self.oscilloscope = Oscilloscope(self.visa_manager)
+        self.motors = Motors()
+
+        self.oscilloscope.calibrate()
+        self.motors.calibrate()
+        self.instruments_ready = True
 
     def __del__(self):
         self.abort_measurement()

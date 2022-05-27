@@ -324,4 +324,5 @@ if __name__ == '__main__':
     timer.start(500)
     timer.timeout.connect(lambda: None)
 
+    core.connect_instruments()
     sys.exit(app.exec())

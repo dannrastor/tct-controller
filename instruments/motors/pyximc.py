@@ -1,5 +1,4 @@
 from ctypes import *
-import os
 import platform
 import sys
 

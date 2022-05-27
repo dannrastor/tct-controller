@@ -4,7 +4,6 @@ from PyQt5.QtCore import QTimer
 
 from core import *
 from gui_logger import *
-import pyvisa
 
 from measurements.calibrate_instruments import CalibrateInstrumentsWorker
 from measurements.motor_scan import MotorScanWorker, MotorScanConfigureDialog

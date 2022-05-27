@@ -1,4 +1,5 @@
-from instruments.motors.pyximc import  *
+from instruments.motors.pyximc import *
+
 
 def set_profile_8MT30_50(lib, id):
     worst_result = Result.Ok
@@ -7,18 +8,22 @@ def set_profile_8MT30_50(lib, id):
     feedback_settings = feedback_settings_t()
 
     feedback_settings.IPS = 4000
+
     class FeedbackType_:
         FEEDBACK_ENCODER_MEDIATED = 6
         FEEDBACK_NONE = 5
         FEEDBACK_EMF = 4
         FEEDBACK_ENCODER = 1
+
     feedback_settings.FeedbackType = FeedbackType_.FEEDBACK_EMF
+
     class FeedbackFlags_:
         FEEDBACK_ENC_TYPE_BITS = 192
         FEEDBACK_ENC_TYPE_DIFFERENTIAL = 128
         FEEDBACK_ENC_TYPE_SINGLE_ENDED = 64
         FEEDBACK_ENC_REVERSE = 1
         FEEDBACK_ENC_TYPE_AUTO = 0
+
     feedback_settings.FeedbackFlags = FeedbackFlags_.FEEDBACK_ENC_TYPE_SINGLE_ENDED | FeedbackFlags_.FEEDBACK_ENC_TYPE_AUTO
     feedback_settings.CountsPerTurn = 4000
     result = lib.set_feedback_settings(id, byref(feedback_settings))
@@ -35,6 +40,7 @@ def set_profile_8MT30_50(lib, id):
     home_settings.uSlowHome = 0
     home_settings.HomeDelta = 500
     home_settings.uHomeDelta = 0
+
     class HomeFlags_:
         HOME_USE_FAST = 256
         HOME_STOP_SECOND_BITS = 192
@@ -49,6 +55,7 @@ def set_profile_8MT30_50(lib, id):
         HOME_MV_SEC_EN = 4
         HOME_DIR_SECOND = 2
         HOME_DIR_FIRST = 1
+
     home_settings.HomeFlags = HomeFlags_.HOME_USE_FAST | HomeFlags_.HOME_STOP_SECOND_REV | HomeFlags_.HOME_STOP_FIRST_BITS | HomeFlags_.HOME_DIR_SECOND
     result = lib.set_home_settings(id, byref(home_settings))
 
@@ -64,6 +71,7 @@ def set_profile_8MT30_50(lib, id):
     move_settings.Decel = 5000
     move_settings.AntiplaySpeed = 2000
     move_settings.uAntiplaySpeed = 0
+
     class MoveFlags_:
         RPM_DIV_1000 = 1
 
@@ -79,6 +87,7 @@ def set_profile_8MT30_50(lib, id):
     engine_settings.NomCurrent = 670
     engine_settings.NomSpeed = 4000
     engine_settings.uNomSpeed = 0
+
     class EngineFlags_:
         ENGINE_LIMIT_RPM = 128
         ENGINE_LIMIT_CURR = 64
@@ -88,8 +97,10 @@ def set_profile_8MT30_50(lib, id):
         ENGINE_MAX_SPEED = 4
         ENGINE_CURRENT_AS_RMS = 2
         ENGINE_REVERSE = 1
+
     engine_settings.EngineFlags = EngineFlags_.ENGINE_LIMIT_RPM | EngineFlags_.ENGINE_ACCEL_ON | EngineFlags_.ENGINE_REVERSE
     engine_settings.Antiplay = 1800
+
     class MicrostepMode_:
         MICROSTEP_MODE_FRAC_256 = 9
         MICROSTEP_MODE_FRAC_128 = 8
@@ -100,6 +111,7 @@ def set_profile_8MT30_50(lib, id):
         MICROSTEP_MODE_FRAC_4 = 3
         MICROSTEP_MODE_FRAC_2 = 2
         MICROSTEP_MODE_FULL = 1
+
     engine_settings.MicrostepMode = MicrostepMode_.MICROSTEP_MODE_FRAC_256
     engine_settings.StepsPerRev = 200
     result = lib.set_engine_settings(id, byref(engine_settings))
@@ -117,11 +129,14 @@ def set_profile_8MT30_50(lib, id):
         ENGINE_TYPE_2DC = 2
         ENGINE_TYPE_DC = 1
         ENGINE_TYPE_NONE = 0
+
     entype_settings.EngineType = EngineType_.ENGINE_TYPE_STEP | EngineType_.ENGINE_TYPE_NONE
+
     class DriverType_:
         DRIVER_TYPE_EXTERNAL = 3
         DRIVER_TYPE_INTEGRATE = 2
         DRIVER_TYPE_DISCRETE_FET = 1
+
     entype_settings.DriverType = DriverType_.DRIVER_TYPE_INTEGRATE
     result = lib.set_entype_settings(id, byref(entype_settings))
 
@@ -135,10 +150,12 @@ def set_profile_8MT30_50(lib, id):
     power_settings.CurrReductDelay = 1000
     power_settings.PowerOffDelay = 60
     power_settings.CurrentSetTime = 300
+
     class PowerFlags_:
         POWER_SMOOTH_CURRENT = 4
         POWER_OFF_ENABLED = 2
         POWER_REDUCT_ENABLED = 1
+
     power_settings.PowerFlags = PowerFlags_.POWER_SMOOTH_CURRENT | PowerFlags_.POWER_REDUCT_ENABLED
     result = lib.set_power_settings(id, byref(power_settings))
 
@@ -155,6 +172,7 @@ def set_profile_8MT30_50(lib, id):
     secure_settings.CriticalIusb = 450
     secure_settings.CriticalUusb = 520
     secure_settings.MinimumUusb = 420
+
     class Flags_:
         ALARM_ENGINE_RESPONSE = 128
         ALARM_WINDING_MISMATCH = 64
@@ -164,6 +182,7 @@ def set_profile_8MT30_50(lib, id):
         H_BRIDGE_ALERT = 4
         LOW_UPWR_PROTECTION = 2
         ALARM_ON_DRIVER_OVERHEATING = 1
+
     secure_settings.Flags = Flags_.ALARM_ENGINE_RESPONSE | Flags_.ALARM_FLAGS_STICKING | Flags_.ALARM_ON_BORDERS_SWAP_MISSET | Flags_.H_BRIDGE_ALERT | Flags_.ALARM_ON_DRIVER_OVERHEATING
     result = lib.set_secure_settings(id, byref(secure_settings))
 
@@ -178,11 +197,14 @@ def set_profile_8MT30_50(lib, id):
         BORDER_STOP_RIGHT = 4
         BORDER_STOP_LEFT = 2
         BORDER_IS_ENCODER = 1
+
     edges_settings.BorderFlags = BorderFlags_.BORDER_STOP_RIGHT | BorderFlags_.BORDER_STOP_LEFT
+
     class EnderFlags_:
         ENDER_SW2_ACTIVE_LOW = 4
         ENDER_SW1_ACTIVE_LOW = 2
         ENDER_SWAP = 1
+
     edges_settings.EnderFlags = EnderFlags_.ENDER_SW2_ACTIVE_LOW | EnderFlags_.ENDER_SW1_ACTIVE_LOW | EnderFlags_.ENDER_SWAP
     edges_settings.LeftBorder = 500
     edges_settings.uLeftBorder = 0
@@ -236,6 +258,7 @@ def set_profile_8MT30_50(lib, id):
         SYNCOUT_INVERT = 4
         SYNCOUT_STATE = 2
         SYNCOUT_ENABLED = 1
+
     sync_out_settings.SyncOutFlags = SyncOutFlags_.SYNCOUT_ONSTOP | SyncOutFlags_.SYNCOUT_ONSTART
     sync_out_settings.SyncOutPulseSteps = 100
     sync_out_settings.SyncOutPeriod = 2000
@@ -252,7 +275,9 @@ def set_profile_8MT30_50(lib, id):
     class EXTIOSetupFlags_:
         EXTIO_SETUP_INVERT = 2
         EXTIO_SETUP_OUTPUT = 1
+
     extio_settings.EXTIOSetupFlags = EXTIOSetupFlags_.EXTIO_SETUP_OUTPUT
+
     class EXTIOModeFlags_:
         EXTIO_SETUP_MODE_OUT_BITS = 240
         EXTIO_SETUP_MODE_OUT_MOTOR_ON = 64
@@ -267,6 +292,7 @@ def set_profile_8MT30_50(lib, id):
         EXTIO_SETUP_MODE_IN_STOP = 1
         EXTIO_SETUP_MODE_IN_NOP = 0
         EXTIO_SETUP_MODE_OUT_OFF = 0
+
     extio_settings.EXTIOModeFlags = EXTIOModeFlags_.EXTIO_SETUP_MODE_IN_STOP | EXTIOModeFlags_.EXTIO_SETUP_MODE_IN_NOP | EXTIOModeFlags_.EXTIO_SETUP_MODE_OUT_OFF
     result = lib.set_extio_settings(id, byref(extio_settings))
 
@@ -280,9 +306,11 @@ def set_profile_8MT30_50(lib, id):
     brake_settings.t2 = 500
     brake_settings.t3 = 300
     brake_settings.t4 = 400
+
     class BrakeFlags_:
         BRAKE_ENG_PWROFF = 2
         BRAKE_ENABLED = 1
+
     brake_settings.BrakeFlags = BrakeFlags_.BRAKE_ENG_PWROFF
     result = lib.set_brake_settings(id, byref(brake_settings))
 
@@ -322,6 +350,7 @@ def set_profile_8MT30_50(lib, id):
     control_settings.Timeout[7] = 1000
     control_settings.Timeout[8] = 1000
     control_settings.MaxClickTime = 300
+
     class Flags_:
         CONTROL_BTN_RIGHT_PUSHED_OPEN = 8
         CONTROL_BTN_LEFT_PUSHED_OPEN = 4
@@ -329,6 +358,7 @@ def set_profile_8MT30_50(lib, id):
         CONTROL_MODE_LR = 2
         CONTROL_MODE_JOY = 1
         CONTROL_MODE_OFF = 0
+
     control_settings.Flags = Flags_.CONTROL_MODE_LR | Flags_.CONTROL_MODE_OFF
     control_settings.DeltaPosition = 1
     control_settings.uDeltaPosition = 0
@@ -345,6 +375,7 @@ def set_profile_8MT30_50(lib, id):
     joystick_settings.JoyHighEnd = 10000
     joystick_settings.ExpFactor = 100
     joystick_settings.DeadZone = 50
+
     class JoyFlags_:
         JOY_REVERSE = 1
 
@@ -357,12 +388,14 @@ def set_profile_8MT30_50(lib, id):
     ctp_settings = ctp_settings_t()
 
     ctp_settings.CTPMinError = 3
+
     class CTPFlags_:
         CTP_ERROR_CORRECTION = 16
         REV_SENS_INV = 8
         CTP_ALARM_ON_ERROR = 4
         CTP_BASE = 2
         CTP_ENABLED = 1
+
     ctp_settings.CTPFlags = CTPFlags_.CTP_ERROR_CORRECTION
     result = lib.set_ctp_settings(id, byref(ctp_settings))
 
@@ -373,6 +406,7 @@ def set_profile_8MT30_50(lib, id):
     uart_settings = uart_settings_t()
 
     uart_settings.Speed = 115200
+
     class UARTSetupFlags_:
         UART_STOP_BIT = 8
         UART_PARITY_BIT_USE = 4
@@ -381,6 +415,7 @@ def set_profile_8MT30_50(lib, id):
         UART_PARITY_BIT_SPACE = 2
         UART_PARITY_BIT_ODD = 1
         UART_PARITY_BIT_EVEN = 0
+
     uart_settings.UARTSetupFlags = UARTSetupFlags_.UART_PARITY_BIT_EVEN
     result = lib.set_uart_settings(id, byref(uart_settings))
 
@@ -391,6 +426,7 @@ def set_profile_8MT30_50(lib, id):
     controller_name = controller_name_t()
 
     controller_name.ControllerName = bytes([0, 113, 252, 118, 36, 0, 72, 0, 3, 0, 0, 0, 104, 101, 103, 0])
+
     class CtrlFlags_:
         EEPROM_PRECEDENCE = 1
 
@@ -405,6 +441,7 @@ def set_profile_8MT30_50(lib, id):
     emf_settings.L = 0.005400000140070915
     emf_settings.R = 7.400000095367432
     emf_settings.Km = 0.0024999999441206455
+
     class BackEMFFlags_:
         BACK_EMF_KM_AUTO = 4
         BACK_EMF_RESISTANCE_AUTO = 2
@@ -448,7 +485,8 @@ def set_profile_8MT30_50(lib, id):
     stage_information = stage_information_t()
 
     stage_information.Manufacturer = bytes([0, 116, 97, 110, 100, 97, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
-    stage_information.PartNumber = bytes([56, 77, 84, 51, 48, 45, 53, 48, 0, 77, 69, 110, 49, 0, 0, 0, 68, 67, 0, 0, 0, 0, 0, 0])
+    stage_information.PartNumber = bytes(
+        [56, 77, 84, 51, 48, 45, 53, 48, 0, 77, 69, 110, 49, 0, 0, 0, 68, 67, 0, 0, 0, 0, 0, 0])
     result = lib.set_stage_information(id, byref(stage_information))
 
     if result != Result.Ok:
@@ -489,6 +527,7 @@ def set_profile_8MT30_50(lib, id):
         MOTOR_TYPE_DC = 2
         MOTOR_TYPE_STEP = 1
         MOTOR_TYPE_UNKNOWN = 0
+
     motor_settings.MotorType = MotorType_.MOTOR_TYPE_STEP | MotorType_.MOTOR_TYPE_UNKNOWN
     motor_settings.ReservedField = 0
     motor_settings.Poles = 0
@@ -535,6 +574,7 @@ def set_profile_8MT30_50(lib, id):
     encoder_settings.SupplyVoltageMax = 0
     encoder_settings.MaxCurrentConsumption = 0
     encoder_settings.PPR = 1000
+
     class EncoderSettings_:
         ENCSET_REVOLUTIONSENSOR_ACTIVE_HIGH = 256
         ENCSET_REVOLUTIONSENSOR_PRESENT = 64
@@ -598,25 +638,31 @@ def set_profile_8MT30_50(lib, id):
 
     accessories_settings = accessories_settings_t()
 
-    accessories_settings.MagneticBrakeInfo = bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+    accessories_settings.MagneticBrakeInfo = bytes(
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
     accessories_settings.MBRatedVoltage = 0
     accessories_settings.MBRatedCurrent = 0
     accessories_settings.MBTorque = 0
+
     class MBSettings_:
         MB_POWERED_HOLD = 2
         MB_AVAILABLE = 1
 
-    accessories_settings.TemperatureSensorInfo = bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+    accessories_settings.TemperatureSensorInfo = bytes(
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
     accessories_settings.TSMin = 0
     accessories_settings.TSMax = 0
     accessories_settings.TSGrad = 0
+
     class TSSettings_:
         TS_AVAILABLE = 8
         TS_TYPE_BITS = 7
         TS_TYPE_SEMICONDUCTOR = 2
         TS_TYPE_THERMOCOUPLE = 1
         TS_TYPE_UNKNOWN = 0
+
     accessories_settings.TSSettings = TSSettings_.TS_TYPE_THERMOCOUPLE | TSSettings_.TS_TYPE_UNKNOWN
+
     class LimitSwitchesSettings_:
         LS_SHORTED = 16
         LS_SW2_ACTIVE_LOW = 8

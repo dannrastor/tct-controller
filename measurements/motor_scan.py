@@ -5,19 +5,21 @@ import os
 
 
 class MotorScanWorker(AsyncWorker):
-
     description = 'Position scan'
 
     def action(self):
 
-        xrange, yrange, zrange = self.settings['xrange'], self.settings['yrange'], self.settings['zrange']
+        xrange = range(*self.settings['xrange'])
+        yrange = range(*self.settings['yrange'])
+        zrange = range(*self.settings['zrange'])
+
         current_steps = 0
-        total_steps = len(range(*xrange)) * len(range(*yrange)) * len(range(*zrange))
+        total_steps = len(xrange) * len(yrange) * len(zrange)
         core.measurement_state = 0, total_steps
 
-        for x in range(*xrange):
-            for y in range(*yrange):
-                for z in range(*zrange):
+        for x in range(xrange):
+            for y in range(yrange):
+                for z in range(zrange):
 
                     if QThread.currentThread().isInterruptionRequested():
                         return
@@ -53,15 +55,10 @@ class MotorScanConfigureDialog(QDialog):
         self.inputs = []
         layout = QGridLayout()
 
+        texts = ['xstart', 'xstop', 'xstep', 'ystart', 'ystop', 'ystep', 'zstart', 'zstop', 'zstep']
+
         for i in range(9):
-            text = ''
-            if i // 3 == 0: text = 'x'
-            if i // 3 == 1: text = 'y'
-            if i // 3 == 2: text = 'z'
-            if i % 3 == 0: text += 'start'
-            if i % 3 == 1: text += 'stop'
-            if i % 3 == 2: text += 'step'
-            layout.addWidget(QLabel(text), i // 3, (i % 3) * 2)
+            layout.addWidget(QLabel(texts[i]), i // 3, (i % 3) * 2)
             spinbox = QSpinBox()
             spinbox.setRange(0, 40000)
             if (i % 3 == 2):
@@ -94,23 +91,18 @@ class MotorScanConfigureDialog(QDialog):
         Check correctness of user input. If correct, exit dialog and store data in its self.ret attribute
         """
 
-        f = lambda x: tuple([i.value() for i in self.inputs[x:x + 3]])
+        f = lambda x: tuple([i.value() for i in self.inputs[x:x+3]])
         xrange, yrange, zrange = f(0), f(3), f(6)
         output_path = self.filename.text()
 
-        mb = QMessageBox(self)
-        mb.setWindowTitle('Configuration error')
         if not (xrange[2] and yrange[2] and zrange[2]):
-            mb.setText('Step can\'t be 0!')
-            mb.exec()
+            QMessageBox(QMessageBox.Warning, 'Configuration error', 'Step can\'t be 0!', parent=self).exec()
             return
         if not (len(range(*xrange)) and len(range(*yrange)) and len(range(*zrange))):
-            mb.setText('There must be at least 1 step on every direction')
-            mb.exec()
+            QMessageBox(QMessageBox.Warning, 'Configuration error', 'Must be at least 1 step!', parent=self).exec()
             return
         if not os.path.exists(os.path.dirname(output_path)):
-            mb.setText('Invalid path')
-            mb.exec()
+            QMessageBox(QMessageBox.Warning, 'Configuration error', 'Invalid path!', parent=self).exec()
             return
 
         self.ret = {'xrange': xrange,

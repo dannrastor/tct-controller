@@ -1,7 +1,7 @@
 import logging
 
 from instruments.motors.pyximc import *
-from instruments.motors.stage_config import set_profile_8MT30_50, Result
+from instruments.motors.stage_config import set_profile_8MT30_50
 import time
 
 sn_to_axis = {31015: 'x', 31016: 'y', 30954: 'z'}
@@ -22,29 +22,29 @@ class Motors:
         self.ids = {}
 
         try:
-            devenum = ximc.enumerate_devices(EnumerateFlags.ENUMERATE_PROBE, '')
-            dev_count = ximc.get_device_count(devenum)
-            logging.info(f'ximc device count: {ximc.get_device_count(devenum)}')
+            device_enum = ximc.enumerate_devices(EnumerateFlags.ENUMERATE_PROBE, '')
+            device_count = ximc.get_device_count(device_enum)
+            logging.info(f'ximc device count: {ximc.get_device_count(device_enum)}')
         except Exception:
             logging.critical('Failed to connect to stage controller')
             raise
 
-        for dev_ind in range(dev_count):
+        for device_index in range(device_count):
 
             try:
-                dev_name = ximc.get_device_name(devenum, dev_ind)
-                device_id = ximc.open_device(dev_name)
+                device_name = ximc.get_device_name(device_enum, device_index)
+                device_id = ximc.open_device(device_name)
                 set_profile_8MT30_50(ximc, device_id)
             except Exception:
                 logging.critical('Failed to open ximc device')
                 raise
 
-            sn = c_uint()
-            ximc.get_serial_number(device_id, byref(sn))
-            sn = sn.value
-            self.ids[sn_to_axis[sn]] = device_id
+            serial_number = c_uint()
+            ximc.get_serial_number(device_id, byref(serial_number))
+            serial_number = serial_number.value
+            self.ids[sn_to_axis[serial_number]] = device_id
 
-            logging.info(f'Connected {dev_name.decode()}, id: {device_id}, S/N: {sn}, Axis: {sn_to_axis[sn]}')
+            logging.info(f'Connected {device_name.decode()}, id: {device_id}, S/N: {serial_number}, Axis: {sn_to_axis[serial_number]}')
 
     def __del__(self):
         for device_id in self.ids.values():
@@ -76,10 +76,7 @@ class Motors:
         status = status_t()
         ximc.get_status(self.ids[axis], byref(status))
 
-        if status.MoveSts == 0:
-            return False
-        else:
-            return True
+        return bool(status.MoveSts)
 
     def move_abs(self, axis, steps):
         """
@@ -94,10 +91,10 @@ class Motors:
         ximc.command_move(self.ids[axis], steps, 0)
 
     def move_rel(self, axis, steps):
-        dest = steps + self.get_position(axis)
-        self.move_abs(axis, dest)
+        destination = steps + self.get_position(axis)
+        self.move_abs(axis, destination)
 
     def wait_for_stop(self):
         # HANGS EXECUTION, NOT FOR USE IN GUI THREAD
-        for id in self.ids:
-            ximc.command_wait_for_stop(id, 50)
+        for device_id in self.ids:
+            ximc.command_wait_for_stop(device_id, 50)

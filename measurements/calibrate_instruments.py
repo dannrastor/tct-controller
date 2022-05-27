@@ -4,6 +4,8 @@ from core import *
 
 class CalibrateInstrumentsWorker(AsyncWorker):
 
+    description = 'Calibration'
+
     def action(self):
         core.measurement_state = 0, 2
         core.oscilloscope.calibrate()

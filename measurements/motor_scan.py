@@ -6,6 +6,8 @@ import os
 
 class MotorScanWorker(AsyncWorker):
 
+    description = 'Position scan'
+
     def action(self):
 
         xrange, yrange, zrange = self.settings['xrange'], self.settings['yrange'], self.settings['zrange']
@@ -18,8 +20,6 @@ class MotorScanWorker(AsyncWorker):
                 for z in range(*zrange):
 
                     if QThread.currentThread().isInterruptionRequested():
-                        print('MotorScan: aborting')
-                        self.finished.emit()
                         return
 
                     core.motors.move_abs('x', x)

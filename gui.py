@@ -3,6 +3,9 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QTimer
 
 from core import *
+from gui_logger import *
+import pyvisa
+
 from measurements.calibrate_instruments import CalibrateInstrumentsWorker
 from measurements.motor_scan import MotorScanWorker, MotorScanConfigureDialog
 
@@ -20,19 +23,16 @@ class TctGui(QMainWindow):
         super().__init__()
 
         self.setWindowTitle('TCT')
-        self.setGeometry(500, 300, 640, 640)
+        self.setGeometry(500, 300, 1000, 800)
         self.setWindowIcon(QIcon('./icon.png'))
 
         self.tabs = QTabWidget()
         self.create_hardware_tab()
-
         self.tabs.addTab(MeasurementControlWidget(), 'Measurements')
-        self.tabs.addTab(QLabel('nothing here'), 'Log')
-
+        self.create_log_tab()
         self.setCentralWidget(self.tabs)
 
         self.show()
-
 
     def create_hardware_tab(self):
         layout = QVBoxLayout()
@@ -47,6 +47,13 @@ class TctGui(QMainWindow):
 
         self.monitoring_tab = tab
         self.tabs.addTab(tab, 'Hardware + Manual control')
+
+    def create_log_tab(self):
+        self.log_view = QPlainTextEdit()
+        self.log_view.setReadOnly(True)
+
+        gui_logger.changed.connect(self.log_view.appendPlainText)
+        self.tabs.addTab(self.log_view, 'Log')
 
 
 class MotorControlWidget(QGroupBox):
@@ -93,7 +100,7 @@ class MotorControlWidget(QGroupBox):
         self.pos_label.setText(f'{pos} steps')
 
         if core.is_measurement_running:
-            if type(core.worker).__name__ == 'CalibrateInstruments':
+            if core.worker.description == 'Calibration':
                 self.status_label.setText('Calibration')
                 return
         if core.motors.is_moving(self.axis):
@@ -135,13 +142,15 @@ class ScopeControlWidget(QGroupBox):
         self.setLayout(layout)
 
     def refresh(self):
-        data = None
-        if not core.is_measurement_running:
-            data = core.oscilloscope.cached_waveform
+
+        data = core.oscilloscope.cached_waveform
         self.figure.clear()
         axes = self.figure.add_subplot(111)
         if data is not None:
-            axes.plot(*data)
+            x, y, = data
+            axes.set_xlabel('t, ns')
+            axes.set_ylabel('signal, mV')
+            axes.plot(x/1e-9, y/1e-3)
         self.canvas.draw()
 
     def fetch(self):
@@ -192,11 +201,10 @@ class MeasurementControlWidget(QGroupBox):
             if dialog.exec():
                 core.run_measurement(MotorScanWorker(dialog.ret))
 
-
     def abort(self):
         dialog = QMessageBox(self)
         dialog.setWindowTitle('Abort measurement')
-        dialog.setText('This may lead to a data loss. Abort anyway?')
+        dialog.setText('Sure?')
         dialog.setStandardButtons(QMessageBox.Abort | QMessageBox.Cancel)
         if dialog.exec() == QMessageBox.Abort:
             core.abort_measurement()
@@ -220,7 +228,7 @@ class MeasurementControlWidget(QGroupBox):
 
         if core.is_measurement_running:
             f(0, 1, 'RUNNING')
-            f(1, 1, type(core.worker).__name__)  # FIXME
+            f(1, 1, core.worker.description)
             ms = core.measurement_state
             f(2, 1, ms[0])
             f(3, 1, ms[1])
@@ -237,8 +245,6 @@ class MeasurementControlWidget(QGroupBox):
         self.table.horizontalHeader().setVisible(False)
         self.table.verticalHeader().setVisible(False)
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-
-
 
 
 class AutoDisablingButton(QPushButton):
@@ -272,6 +278,7 @@ if __name__ == '__main__':
     timer.start(500)
     timer.timeout.connect(lambda: None)
 
+    core.connect_instruments()
     core.run_measurement(CalibrateInstrumentsWorker())
 
     sys.exit(app.exec())

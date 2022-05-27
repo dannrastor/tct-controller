@@ -1,3 +1,5 @@
+import logging
+
 from instruments.motors.pyximc import *
 from instruments.motors.stage_config import set_profile_8MT30_50, Result
 import time
@@ -22,9 +24,9 @@ class Motors:
         try:
             devenum = ximc.enumerate_devices(EnumerateFlags.ENUMERATE_PROBE, '')
             dev_count = ximc.get_device_count(devenum)
-            print(f'Device count: {ximc.get_device_count(devenum)}')
+            logging.info(f'ximc device count: {ximc.get_device_count(devenum)}')
         except Exception:
-            print('Failed to connect to stage controller')
+            logging.critical('Failed to connect to stage controller')
             raise
 
         for dev_ind in range(dev_count):
@@ -34,17 +36,15 @@ class Motors:
                 device_id = ximc.open_device(dev_name)
                 set_profile_8MT30_50(ximc, device_id)
             except Exception:
-                print('Failed to open ximc device')
+                logging.critical('Failed to open ximc device')
                 raise
 
             sn = c_uint()
             ximc.get_serial_number(device_id, byref(sn))
             sn = sn.value
-            print(f'Found stage {dev_name.decode()} ', end='')
-            print(f'SN:{sn} ', end='')
             self.ids[sn_to_axis[sn]] = device_id
-            print(f'ID:{device_id}')
-            print(f'This is axis {sn_to_axis[sn]}')
+
+            logging.info(f'Connected {dev_name.decode()}, id: {device_id}, S/N: {sn}, Axis: {sn_to_axis[sn]}')
 
     def __del__(self):
         for device_id in self.ids.values():
@@ -54,7 +54,7 @@ class Motors:
         """
         Move all stages to low limit switch and set zero there
         """
-        print('Calibrating motors: ', end='')
+        logging.info('Calibrating motors...')
         for device_id in self.ids.values():
             ximc.command_home(device_id)
         for device_id in self.ids.values():
@@ -64,7 +64,7 @@ class Motors:
 
         for device_id in self.ids.values():
             ximc.command_zero(device_id)
-        print('Done')
+        logging.info('Motor calibration finished')
 
     def get_position(self, axis):
         pos = get_position_t()
@@ -81,25 +81,13 @@ class Motors:
         else:
             return True
 
-    def print_positions(self, units='steps'):
-        for axis in sorted(self.ids.keys()):
-            print(axis + '=', end='')
-            pos = self.get_position(axis)
-            if units == 'steps':
-                print(f'{pos[0]}steps ', end='')
-            if units == 'steps_usteps':
-                print(f'{pos[0]}:{pos[1]}steps:usteps ', end='')
-            if units == 'mm':
-                print(f'{steps_to_mm(*pos)}mm ', end='')
-        print()
-
     def move_abs(self, axis, steps):
         """
         Request absolute movement of the stage.
         If requested position is beyond physical limits, move to that limit instead.
         """
 
-        # print(f'requested {axis} {steps}')
+        logging.info(f'Absolute movement: {axis}->{steps}')
         steps = min(40000, steps)
         steps = max(0, steps)
         # microsteps ignored

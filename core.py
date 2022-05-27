@@ -1,15 +1,12 @@
 from PyQt5.QtCore import QObject, QThread, pyqtSignal
 
 from instruments.oscilloscope import Oscilloscope
-from instruments.temperature import TemperatureSensor
 from instruments.motors.motor_controller import Motors
-
 
 import pyvisa
 import time
 
-import pickle
-import numpy
+import logging
 
 
 class TCTController(QObject):
@@ -19,10 +16,10 @@ class TCTController(QObject):
 
     def __init__(self):
         super().__init__()
-        self.visa_manager = pyvisa.ResourceManager()
+        self.visa_manager = pyvisa.ResourceManager('@py')
 
-        self.oscilloscope = Oscilloscope(self.visa_manager)
-        self.motors = Motors()
+        self.oscilloscope = None
+        self.motors = None
         self.hv_source = None
         self.temperature = None
 
@@ -34,18 +31,20 @@ class TCTController(QObject):
     def __del__(self):
         self.abort_measurement()
 
+    def connect_instruments(self):
+        self.oscilloscope = Oscilloscope(self.visa_manager)
+        self.motors = Motors()
+
     def run_measurement(self, worker):
         """
         Launch measurement thread
         """
-        print('Measurement starting')
+
 
         self.measurement_started.emit()
         self.is_measurement_running = True
 
         self.thread = QThread()
-
-        # FiXME: allow for use of different workers
         self.worker = worker
 
         self.worker.moveToThread(self.thread)
@@ -56,26 +55,21 @@ class TCTController(QObject):
         self.thread.finished.connect(self.thread.deleteLater)
 
         self.start_time = int(time.time())
+
+        logging.info(f'Measurement starting: {self.worker.description}')
+        logging.info(f'Settings: {self.worker.settings}')
         self.thread.start()
 
     def abort_measurement(self):
         if hasattr(self, 'thread') and self.is_measurement_running:
-            self.finish_measurement()
             self.thread.requestInterruption()
+            logging.info(f'Abort requested: {self.worker.description}')
 
     def finish_measurement(self):
         self.measurement_state = 0, 1
         self.is_measurement_running = False
         self.measurement_finished.emit()
-
+        logging.info(f'Measurement finished: {self.worker.description}')
 
 
 core = TCTController()
-
-
-
-
-
-
-
-

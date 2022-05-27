@@ -1,4 +1,4 @@
-import pyvisa
+from gui_logger import *
 import numpy
 import itertools
 
@@ -10,17 +10,16 @@ class Oscilloscope:
         try:
             self.scope = resource_manager.open_resource(f'TCPIP0::{scope_ip}::INSTR')
         except Exception:
-            print('Failed to connect to oscilloscope, aborting!')
-            raise
+            logging.critical('Failed to connect to oscilloscope!')
 
         self.scope.timeout = 5000
 
         try:
             self.scope.write('*IDN?')
             msg = self.scope.read()
-            print('Connected:', msg.rstrip())
+            logging.info('Oscilloscope connected: ' + msg.rstrip())
         except Exception:
-            print('Failed to get response from the scope!')
+            logging.critical('Failed to get response from the scope!')
             raise
 
         self.scope.write('CFMT DEF9, WORD, BIN')  # set proper byte count for DAQ
@@ -28,14 +27,14 @@ class Oscilloscope:
 
     def __del__(self):
         if hasattr(self, 'scope'):
-            print('Closing connection!')
+            logging.info('Closing connection to oscilloscope!')
             self.scope.close()
 
     def calibrate(self):
-        print('Calibration: ', end='')
+        logging.info('Oscilloscope calibration...')
         self.scope.write('*CAL?')
         msg = self.scope.read()
-        print(msg.rstrip())
+        logging.info('Oscilloscope calibration: ' + msg.rstrip())
 
     def get_waveform(self, ch):
         raw_wf = self._get_raw_waveform(ch)

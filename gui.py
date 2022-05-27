@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QTimer
 
+import core
 from core import *
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
@@ -63,7 +64,7 @@ class MotorControlWidget(QGroupBox):
 
         self.name_label = QLabel(f'{self.axis} axis')
         self.pos_label = QLabel()
-        self.status_label = QLabel('FIXME')
+        self.status_label = QLabel('-')
 
         self.spinbox = QSpinBox()
         self.spinbox.setRange(-40000, 40000)
@@ -86,18 +87,25 @@ class MotorControlWidget(QGroupBox):
         self.timer.start(10)
 
     def refresh(self):
+        if core.motors is None:
+            self.status_label.setText('Unconnected')
+            return
         pos = core.motors.get_position(self.axis)
         self.pos_label.setText(f'{pos} steps')
-        if core.motors.is_moving(self.axis):
+        if not core.instruments_ready:
+            self.status_label.setText('Calibration')
+        elif core.motors.is_moving(self.axis):
             self.status_label.setText('Moving')
         else:
             self.status_label.setText('Ready')
 
     def request_abs_move(self):
-        core.motors.move_abs(self.axis, self.spinbox.value())
+        if core.motors is not None and core.instruments_ready:
+            core.motors.move_abs(self.axis, self.spinbox.value())
 
     def request_rel_move(self):
-        core.motors.move_rel(self.axis, self.spinbox.value())
+        if core.motors is not None and core.instruments_ready:
+            core.motors.move_rel(self.axis, self.spinbox.value())
 
 
 class ScopeControlWidget(QGroupBox):
@@ -125,7 +133,9 @@ class ScopeControlWidget(QGroupBox):
         self.setLayout(layout)
 
     def refresh(self):
-        data = core.oscilloscope.cached_waveform
+        data = None
+        if core.oscilloscope is not None and core.instruments_ready:
+            data = core.oscilloscope.cached_waveform
         self.figure.clear()
         axes = self.figure.add_subplot(111)
         if data is not None:

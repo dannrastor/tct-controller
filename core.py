@@ -40,6 +40,9 @@ class TCTController(QObject):
         Launch measurement thread
         """
 
+        if self.is_measurement_running:
+            return
+
         self.measurement_started.emit()
         self.is_measurement_running = True
 

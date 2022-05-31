@@ -116,6 +116,7 @@ class MotorControlWidget(QGroupBox):
             core.motors.move_rel(self.axis, self.spinbox.value())
 
 
+
 class ScopeControlWidget(QGroupBox):
     """
     Oscilloscope control widget
@@ -177,7 +178,7 @@ class MeasurementControlWidget(QGroupBox):
         self.fill_table()
 
         self.combobox = QComboBox()
-        self.combobox.addItems(['Calibrate instruments', 'Spatial scan'])
+        self.combobox.addItems(['Calibrate instruments', 'Position scan'])
 
         layout = QGridLayout()
         layout.addWidget(self.table, 0, 0, 3, 3)
@@ -187,9 +188,15 @@ class MeasurementControlWidget(QGroupBox):
         layout.addWidget(self.abort_button, 4, 2, 1, 1)
         self.setLayout(layout)
 
+        # a workaround to mute popup after initial calibration FIXME
+        self.first = True
+        core.measurement_finished.connect(self.finished_popup)
+
         self.timer = QTimer()
         self.timer.timeout.connect(self.refresh)
         self.timer.start(1000)
+
+
 
     def configure_and_run(self):
         s = self.combobox.currentIndex()
@@ -207,6 +214,11 @@ class MeasurementControlWidget(QGroupBox):
         dialog.setStandardButtons(QMessageBox.Abort | QMessageBox.Cancel)
         if dialog.exec() == QMessageBox.Abort:
             core.abort_measurement()
+
+    def finished_popup(self):
+        if not self.first:
+            QMessageBox(QMessageBox.Information, '', 'Measurement finished!', parent=self).exec()
+        self.first = False
 
     def refresh(self):
         self.statusbar.setMinimum(0)

@@ -17,9 +17,9 @@ class MotorScanWorker(AsyncWorker):
         total_steps = len(xrange) * len(yrange) * len(zrange)
         core.measurement_state = 0, total_steps
 
-        for x in range(xrange):
-            for y in range(yrange):
-                for z in range(zrange):
+        for x in xrange:
+            for y in yrange:
+                for z in zrange:
 
                     if QThread.currentThread().isInterruptionRequested():
                         return
@@ -53,33 +53,70 @@ class MotorScanConfigureDialog(QDialog):
         self.ret = None
 
         self.inputs = []
-        layout = QGridLayout()
+
 
         texts = ['xstart', 'xstop', 'xstep', 'ystart', 'ystop', 'ystep', 'zstart', 'zstop', 'zstep']
 
+        range_box = QGroupBox()
+        range_box.setTitle('Coordinate ranges')
+        range_box_layout = QGridLayout()
         for i in range(9):
-            layout.addWidget(QLabel(texts[i]), i // 3, (i % 3) * 2)
+            range_box_layout.addWidget(QLabel(texts[i]), i // 3, (i % 3) * 2)
             spinbox = QSpinBox()
             spinbox.setRange(0, 40000)
             if (i % 3 == 2):
                 spinbox.setRange(-40000, 40000)
                 spinbox.setValue(1)
             self.inputs.append(spinbox)
-            layout.addWidget(spinbox, i // 3, (i % 3) * 2 + 1)
+            range_box_layout.addWidget(spinbox, i // 3, (i % 3) * 2 + 1)
+        range_box.setLayout(range_box_layout)
 
+        file_box = QGroupBox()
+        file_box.setTitle('Output file')
+        file_box_layout = QHBoxLayout()
         self.filename = QLineEdit('/path/to/output/file.pickle')
-        layout.addWidget(self.filename, 3, 0, 1, 5)
+        file_box_layout.addWidget(self.filename)
         self.file_button = QPushButton('Select...')
         self.file_button.clicked.connect(self.choose_file)
-        layout.addWidget(self.file_button, 3, 5)
+        file_box_layout.addWidget(self.file_button)
+        file_box.setLayout(file_box_layout)
 
+        run_box = QWidget()
+        run_layout = QHBoxLayout()
         self.ok_button = QPushButton('Start scan')
         self.ok_button.clicked.connect(self.finalize)
-        layout.addWidget(self.ok_button, 4, 0, 1, 3)
+        run_layout.addWidget(self.ok_button)
         self.cancel_button = QPushButton('Cancel')
         self.cancel_button.clicked.connect(self.reject)
-        layout.addWidget(self.cancel_button, 4, 3, 1, 3)
+        run_layout.addWidget(self.cancel_button)
+        run_box.setLayout(run_layout)
 
+        channel_box = QGroupBox()
+        channel_box.setTitle('Channels')
+        channel_layout = QHBoxLayout()
+        self.channel_ticks = []
+        for i in range(3):
+            self.channel_ticks.append(QCheckBox(f'CH{i+1}'))
+            channel_layout.addWidget(self.channel_ticks[i])
+        channel_box.setLayout(channel_layout)
+
+        datatype_box = QGroupBox()
+        datatype_box.setTitle('Data to store')
+        datatype_box_layout = QHBoxLayout()
+        self.save_integral_button = QRadioButton('Only integral')
+        self.save_all_button = QRadioButton('Full waveforms')
+        self.save_all_button.setChecked(True)
+        datatype_box_layout.addWidget(self.save_all_button)
+        datatype_box_layout.addWidget(self.save_integral_button)
+
+        datatype_box.setLayout(datatype_box_layout)
+
+        layout = QVBoxLayout()
+        layout.addWidget(range_box)
+        layout.addWidget(channel_box)
+        layout.addWidget(datatype_box)
+        layout.addWidget(file_box)
+        layout.addWidget(run_box)
         self.setLayout(layout)
 
     def choose_file(self):
@@ -94,19 +131,26 @@ class MotorScanConfigureDialog(QDialog):
         f = lambda x: tuple([i.value() for i in self.inputs[x:x+3]])
         xrange, yrange, zrange = f(0), f(3), f(6)
         output_path = self.filename.text()
+        save_integral = self.save_integral_button.isChecked()
+        channels = [i+1 for i, button in enumerate(self.channel_ticks) if button.isChecked()]
 
         if not (xrange[2] and yrange[2] and zrange[2]):
             QMessageBox(QMessageBox.Warning, 'Configuration error', 'Step can\'t be 0!', parent=self).exec()
             return
         if not (len(range(*xrange)) and len(range(*yrange)) and len(range(*zrange))):
-            QMessageBox(QMessageBox.Warning, 'Configuration error', 'Must be at least 1 step!', parent=self).exec()
+            QMessageBox(QMessageBox.Warning, 'Configuration error', 'Must be at least one step!', parent=self).exec()
             return
         if not os.path.exists(os.path.dirname(output_path)):
             QMessageBox(QMessageBox.Warning, 'Configuration error', 'Invalid path!', parent=self).exec()
+            return
+        if not any([i.isChecked() for i in self.channel_ticks]):
+            QMessageBox(QMessageBox.Warning, 'Configuration error', 'Select at least one channel!', parent=self).exec()
             return
 
         self.ret = {'xrange': xrange,
                     'yrange': yrange,
                     'zrange': zrange,
-                    'path': output_path}
+                    'path': output_path,
+                    'channels': channels,
+                    'save_integral': save_integral}
         self.accept()

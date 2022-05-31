@@ -2,12 +2,16 @@ from measurements.async_worker import AsyncWorker
 from core import *
 from PyQt5.QtWidgets import *
 import os
-
+import pickle
+import numpy
 
 class MotorScanWorker(AsyncWorker):
     description = 'Position scan'
 
     def action(self):
+
+        self.result = {}
+        self.result['settings'] = self.settings
 
         xrange = range(*self.settings['xrange'])
         yrange = range(*self.settings['yrange'])
@@ -22,6 +26,7 @@ class MotorScanWorker(AsyncWorker):
                 for z in zrange:
 
                     if QThread.currentThread().isInterruptionRequested():
+                        self.save_data()
                         return
 
                     core.motors.move_abs('x', x)
@@ -37,10 +42,22 @@ class MotorScanWorker(AsyncWorker):
 
                     time.sleep(1)
 
-                    core.oscilloscope.get_waveform(2)
+                    self.result[(x, y, z)] = {}
+                    for ch in self.settings['channels']:
+                        t, v = core.oscilloscope.get_waveform(ch)
+                        if self.settings['save_integral']:
+                            self.result[(x, y, z)][ch] = numpy.sum(v)
+                        else:
+                            self.result[(x, y, z)][ch] = t, v
 
                     current_steps += 1
                     core.measurement_state = current_steps, total_steps
+        self.save_data()
+
+    def save_data(self):
+        with open(self.settings['path'], 'wb') as f:
+            pickle.dump(self.result, f)
+
 
 
 class MotorScanConfigureDialog(QDialog):

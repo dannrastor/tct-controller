@@ -54,6 +54,7 @@ class Oscilloscope:
         return data
 
     def _get_raw_waveform(self, ch):
+        self.scope.write('TRMD NORM')
         self.scope.write('WFSU SP, 0, NP, 0, FP, 0, SN, 0')
         self.scope.write(f'C{ch}:WF?')
         data = self.scope.read_raw()

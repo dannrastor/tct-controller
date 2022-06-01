@@ -134,7 +134,7 @@ class ScopeControlWidget(QGroupBox):
         self.fetch_button.clicked.connect(self.fetch)
 
         self.timer = QTimer()
-        # self.timer.timeout.connect(self.refresh)
+        self.timer.timeout.connect(self.refresh)
         self.timer.start(100)
 
         layout.addWidget(self.canvas)
@@ -142,30 +142,28 @@ class ScopeControlWidget(QGroupBox):
         self.setLayout(layout)
 
     def refresh(self):
+        """
+        Plot cached waveforms stored in oscilloscope object
+        """
 
         data = core.oscilloscope.cached_waveform
         self.figure.clear()
         axes = self.figure.add_subplot(111)
-        if data is not None:
-            x, y, = data
-            axes.set_xlabel('t, ns')
-            axes.set_ylabel('signal, mV')
-            axes.plot(x/1e-9, y/1e-3)
+        for key, value in data.items():
+            x, y = value
+            axes.plot(x / 1e-9, y / 1e-3, color=self.channel_to_color[key])
+        axes.set_xlabel('t, ns')
+        axes.set_ylabel('signal, mV')
         self.canvas.draw()
 
     def fetch(self):
-        self.figure.clear()
-        axes = self.figure.add_subplot(111)
-        for i in range(3):
-            data = core.oscilloscope.get_waveform(i+1)
-            if data is not None:
-                x, y, = data
-                axes.set_xlabel('t, ns')
-                axes.set_ylabel('signal, mV')
-                axes.plot(x/1e-9, y/1e-3, color=self.channel_to_color[i+1])
-        self.canvas.draw()
+        """
+        Force acquisition with scope, which will update cached wfs
+        """
 
-        # self.refresh()
+        for i in range(3):
+            core.oscilloscope.get_waveform(i + 1)
+        self.refresh()
 
 
 class MeasurementControlWidget(QGroupBox):

@@ -23,7 +23,7 @@ class Oscilloscope:
             raise
 
         self.scope.write('CFMT DEF9, WORD, BIN')  # set proper byte count for DAQ
-        self.cached_waveform = None
+        self.cached_waveform = {}
 
     def __del__(self):
         if hasattr(self, 'scope'):
@@ -39,7 +39,7 @@ class Oscilloscope:
     def get_waveform(self, ch):
         raw_wf = self._get_raw_waveform(ch)
         data = self._parse_raw_waveform(raw_wf)
-        self.cached_waveform = data
+        self.cached_waveform[ch] = data
         return data
 
     def get_raw_screenshot(self):

@@ -116,11 +116,11 @@ class MotorControlWidget(QGroupBox):
             core.motors.move_rel(self.axis, self.spinbox.value())
 
 
-
 class ScopeControlWidget(QGroupBox):
     """
     Oscilloscope control widget
     """
+    channel_to_color = {1: 'orange', 2: 'magenta', 3: 'tab:blue'}
 
     def __init__(self):
         super().__init__()
@@ -134,7 +134,7 @@ class ScopeControlWidget(QGroupBox):
         self.fetch_button.clicked.connect(self.fetch)
 
         self.timer = QTimer()
-        self.timer.timeout.connect(self.refresh)
+        # self.timer.timeout.connect(self.refresh)
         self.timer.start(100)
 
         layout.addWidget(self.canvas)
@@ -154,8 +154,18 @@ class ScopeControlWidget(QGroupBox):
         self.canvas.draw()
 
     def fetch(self):
-        core.oscilloscope.get_waveform(2)
-        self.refresh()
+        self.figure.clear()
+        axes = self.figure.add_subplot(111)
+        for i in range(3):
+            data = core.oscilloscope.get_waveform(i+1)
+            if data is not None:
+                x, y, = data
+                axes.set_xlabel('t, ns')
+                axes.set_ylabel('signal, mV')
+                axes.plot(x/1e-9, y/1e-3, color=self.channel_to_color[i+1])
+        self.canvas.draw()
+
+        # self.refresh()
 
 
 class MeasurementControlWidget(QGroupBox):
@@ -195,8 +205,6 @@ class MeasurementControlWidget(QGroupBox):
         self.timer = QTimer()
         self.timer.timeout.connect(self.refresh)
         self.timer.start(1000)
-
-
 
     def configure_and_run(self):
         s = self.combobox.currentIndex()

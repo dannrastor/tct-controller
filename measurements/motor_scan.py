@@ -137,8 +137,7 @@ class MotorScanConfigureDialog(QDialog):
         self.setLayout(layout)
 
     def choose_file(self):
-        path = QFileDialog.getSaveFileName()[0]
-        self.filename.setText(path)
+        self.filename.setText(QFileDialog.getSaveFileName()[0])
 
     def finalize(self):
         """

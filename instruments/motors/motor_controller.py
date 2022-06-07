@@ -84,7 +84,7 @@ class Motors:
         If requested position is beyond physical limits, move to that limit instead.
         """
 
-        logging.info(f'Absolute movement: {axis}->{steps}')
+        # logging.info(f'Absolute movement: {axis}->{steps}')
         steps = min(40000, steps)
         steps = max(0, steps)
         # microsteps ignored

@@ -40,7 +40,7 @@ class MotorScanWorker(AsyncWorker):
                     while core.motors.is_moving('x') or core.motors.is_moving('y') or core.motors.is_moving('z'):
                         time.sleep(0.05)
 
-                    time.sleep(1)
+                    time.sleep(0.5)
 
                     self.result[(x, y, z)] = {}
                     for ch in self.settings['channels']:
@@ -59,7 +59,6 @@ class MotorScanWorker(AsyncWorker):
             pickle.dump(self.result, f)
 
 
-
 class MotorScanConfigureDialog(QDialog):
 
     def __init__(self, parent=None):
@@ -70,7 +69,6 @@ class MotorScanConfigureDialog(QDialog):
         self.ret = None
 
         self.inputs = []
-
 
         texts = ['xstart', 'xstop', 'xstep', 'ystart', 'ystop', 'ystep', 'zstart', 'zstop', 'zstep']
 

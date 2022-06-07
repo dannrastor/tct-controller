@@ -1,3 +1,5 @@
+import time
+
 from gui_logger import *
 import numpy
 import itertools
@@ -39,6 +41,14 @@ class Oscilloscope:
     def get_waveform(self, ch):
         raw_wf = self._get_raw_waveform(ch)
         data = self._parse_raw_waveform(raw_wf)
+
+        # Try to reset trigger if it is stuck
+        while self.cached_waveform[ch] == data:
+            self.unstuck()
+            logging.info('Trigger failure detected')
+            raw_wf = self._get_raw_waveform(ch)
+            data = self._parse_raw_waveform(raw_wf)
+
         self.cached_waveform[ch] = data
         return data
 
@@ -54,11 +64,23 @@ class Oscilloscope:
         return data
 
     def _get_raw_waveform(self, ch):
-        self.scope.write('TRMD NORM')
+
         self.scope.write('WFSU SP, 0, NP, 0, FP, 0, SN, 0')
+        time.sleep(0.01)
         self.scope.write(f'C{ch}:WF?')
         data = self.scope.read_raw()
         return data
+
+    def unstuck(self):
+        """
+        Attempt to revive trigger system which is stuck
+        """
+
+        logging.info('Restarting trigger')
+        self.scope.write('TRMD STOP')   # stop triggering
+        self.scope.write('CLSW')    # clear averaging buffers
+        time.sleep(1)
+        self.scope.write('TRMD AUTO')   # re-enable triggering
 
     def _parse_text_waveform(self, text_waveform):
         """

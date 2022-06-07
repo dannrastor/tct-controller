@@ -133,12 +133,16 @@ class ScopeControlWidget(QGroupBox):
         self.fetch_button = AutoDisablingButton('Fetch waveform')
         self.fetch_button.clicked.connect(self.fetch)
 
+        self.restart_trig = QPushButton('Restart trigger (DEBUG)')
+        self.restart_trig.clicked.connect(self.unstuck)
+
         self.timer = QTimer()
         self.timer.timeout.connect(self.refresh)
         self.timer.start(100)
 
         layout.addWidget(self.canvas)
         layout.addWidget(self.fetch_button)
+        layout.addWidget(self.restart_trig)
         self.setLayout(layout)
 
     def refresh(self):
@@ -164,6 +168,9 @@ class ScopeControlWidget(QGroupBox):
         for i in range(3):
             core.oscilloscope.get_waveform(i + 1)
         self.refresh()
+
+    def unstuck(self):
+        core.oscilloscope.unstuck()
 
 
 class MeasurementControlWidget(QGroupBox):

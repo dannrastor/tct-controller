@@ -2,6 +2,7 @@ from PyQt5.QtCore import QObject, QThread, pyqtSignal
 
 from instruments.oscilloscope import Oscilloscope
 from instruments.motors.motor_controller import Motors
+from instruments.temperature import TemperatureSensor
 
 import pyvisa
 import time
@@ -34,6 +35,7 @@ class TCTController(QObject):
     def connect_instruments(self):
         self.oscilloscope = Oscilloscope(self.visa_manager)
         self.motors = Motors()
+        self.temperature = TemperatureSensor()
 
     def run_measurement(self, worker):
         """

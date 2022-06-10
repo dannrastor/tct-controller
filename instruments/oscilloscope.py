@@ -43,7 +43,7 @@ class Oscilloscope:
         data = self._parse_raw_waveform(raw_wf)
 
         # Try to reset trigger if it is stuck
-         if ch in self.cached_waveform:
+        if ch in self.cached_waveform:
             while (self.cached_waveform[ch][1] == data[1]).all():
                 # np.array.all is used cause result of np.array comparison is also an array
                 logging.info('Trigger failure detected')

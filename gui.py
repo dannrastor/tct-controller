@@ -40,6 +40,7 @@ class TctGui(QMainWindow):
         layout.addWidget(MotorControlWidget('x'))
         layout.addWidget(MotorControlWidget('y'))
         layout.addWidget(MotorControlWidget('z'))
+        layout.addWidget(TemperatureWidget())
 
         tab = QWidget()
         tab.setLayout(layout)
@@ -166,7 +167,6 @@ class ScopeControlWidget(QGroupBox):
         self.refresh()
 
 
-
 class MeasurementControlWidget(QGroupBox):
     """
     Contents of Measurements tab
@@ -263,6 +263,36 @@ class MeasurementControlWidget(QGroupBox):
         self.table.horizontalHeader().setVisible(False)
         self.table.verticalHeader().setVisible(False)
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+
+
+class TemperatureWidget(QGroupBox):
+    def __init__(self):
+        super().__init__()
+
+        self.ch1_label = QLabel('-')
+        self.ch2_label = QLabel('-')
+
+        layout = QHBoxLayout()
+        layout.addWidget(QLabel('Temperatures'))
+        layout.addWidget(self.ch1_label)
+        layout.addWidget(self.ch2_label)
+
+        self.setLayout(layout)
+
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.refresh)
+        self.timer.start(1000)
+
+    def refresh(self):
+        if core.temperature is not None:
+            t1 = core.temperature.get_value(1)
+            t2 = core.temperature.get_value(2)
+            if t1:
+                self.ch1_label.setText(f'Ch1:  {float(t1):.1f}{chr(176)}C')
+            if t2:
+                self.ch2_label.setText(f'Ch2:  {float(t2):.1f}{chr(176)}C')
+
+
 
 
 class AutoDisablingButton(QPushButton):

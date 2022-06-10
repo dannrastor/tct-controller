@@ -135,7 +135,11 @@ class MotorScanConfigureDialog(QDialog):
         self.setLayout(layout)
 
     def choose_file(self):
-        self.filename.setText(QFileDialog.getSaveFileName()[0])
+        self.filename.setText(QFileDialog.getSaveFileName(
+            None,
+            'Select output file',
+            '/home/drastorg/tct/data',
+            '', '')[0])
 
     def finalize(self):
         """

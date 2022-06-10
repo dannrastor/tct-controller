@@ -1,8 +1,9 @@
+import time
 import logging
 
 from instruments.motors.pyximc import *
 from instruments.motors.stage_config import set_profile_8MT30_50
-import time
+
 
 sn_to_axis = {31015: 'x', 31016: 'y', 30954: 'z'}
 

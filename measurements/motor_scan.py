@@ -1,9 +1,12 @@
-from measurements.async_worker import AsyncWorker
-from core import *
-from PyQt5.QtWidgets import *
 import os
 import pickle
+
 import numpy
+from PyQt5.QtWidgets import *
+
+from core import *
+from measurements.async_worker import AsyncWorker
+
 
 class MotorScanWorker(AsyncWorker):
     description = 'Position scan'

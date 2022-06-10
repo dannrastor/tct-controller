@@ -1,5 +1,5 @@
-from measurements.async_worker import AsyncWorker
 from core import *
+from measurements.async_worker import AsyncWorker
 
 
 class CalibrateInstrumentsWorker(AsyncWorker):

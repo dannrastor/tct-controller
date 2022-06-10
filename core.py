@@ -1,13 +1,12 @@
-from PyQt5.QtCore import QObject, QThread, pyqtSignal
-
-from instruments.oscilloscope import Oscilloscope
-from instruments.motors.motor_controller import Motors
-from instruments.temperature import TemperatureSensor
+import time
+import logging
 
 import pyvisa
-import time
+from PyQt5.QtCore import QObject, pyqtSignal, QThread
 
-import logging
+from instruments.motors.motor_controller import Motors
+from instruments.oscilloscope import Oscilloscope
+from instruments.temperature import TemperatureSensor
 
 
 class TCTController(QObject):

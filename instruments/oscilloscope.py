@@ -1,8 +1,10 @@
 import time
-
-from gui_logger import *
-import numpy
 import itertools
+
+import numpy
+
+from utils.gui_logger import *
+
 
 scope_ip = '169.254.40.151'
 

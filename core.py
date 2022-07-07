@@ -28,10 +28,18 @@ class TCTController(QObject):
         self.measurement_state = 0, 1
         self.is_measurement_running = False
 
+        # For debugging. When set to true, core does not try to connect to instruments, will do random shit instead
+        self.mockup_instruments = True
+
+
+
     def __del__(self):
         self.abort_measurement()
 
     def connect_instruments(self):
+        if self.mockup_instruments:
+            return
+
         self.oscilloscope = Oscilloscope(self.visa_manager)
         self.motors = Motors()
         self.temperature = TemperatureSensor()

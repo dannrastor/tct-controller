@@ -33,9 +33,10 @@ class MotorScanWorker(AsyncWorker):
                         self.save_data()
                         return
 
-                    core.motors.move_abs('x', x)
-                    core.motors.move_abs('y', y)
-                    core.motors.move_abs('z', z)
+                    if core.motors is not None:
+                        core.motors.move_abs('x', x)
+                        core.motors.move_abs('y', y)
+                        core.motors.move_abs('z', z)
 
                     # Delay between move command and state check is crucial, the latter fails otherwise
                     # Controller response time is several ms

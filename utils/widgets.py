@@ -104,16 +104,16 @@ class ScopeControlWidget(QGroupBox):
         """
         Plot cached waveforms stored in oscilloscope object
         """
-
-        data = core.oscilloscope.cached_waveform
-        self.figure.clear()
-        axes = self.figure.add_subplot(111)
-        for key, value in data.items():
-            x, y = value
-            axes.plot(x / 1e-9, y / 1e-3, color=self.channel_to_color[key])
-        axes.set_xlabel('t, ns')
-        axes.set_ylabel('signal, mV')
-        self.canvas.draw()
+        if core.oscilloscope is not None:
+            data = core.oscilloscope.cached_waveform
+            self.figure.clear()
+            axes = self.figure.add_subplot(111)
+            for key, value in data.items():
+                x, y = value
+                axes.plot(x / 1e-9, y / 1e-3, color=self.channel_to_color[key])
+            axes.set_xlabel('t, ns')
+            axes.set_ylabel('signal, mV')
+            self.canvas.draw()
 
     def fetch(self):
         """
@@ -121,7 +121,8 @@ class ScopeControlWidget(QGroupBox):
         """
 
         for i in range(3):
-            core.oscilloscope.get_waveform(i + 1)
+            if core.oscilloscope is not None:
+                core.oscilloscope.get_waveform(i + 1)
         self.refresh()
 
 

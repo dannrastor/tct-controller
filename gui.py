@@ -32,6 +32,7 @@ class TctGui(QMainWindow):
         layout.addWidget(MotorControlWidget('x'))
         layout.addWidget(MotorControlWidget('y'))
         layout.addWidget(MotorControlWidget('z'))
+        layout.addWidget(HVWidget())
         layout.addWidget(TemperatureWidget())
 
         tab = QWidget()

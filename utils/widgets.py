@@ -250,8 +250,50 @@ class TemperatureWidget(QGroupBox):
             if t2:
                 self.ch2_label.setText(f'Ch2:  {float(t2):.1f}{chr(176)}C')
 
+class HVWidget(QGroupBox):
+    def __init__(self):
+        super().__init__()
+
+        self.on_button = QPushButton('on')
+        self.on_button.clicked.connect(self.on)
+        self.off_button = QPushButton('off')
+        self.off_button.clicked.connect(self.off)
+        self.lbl = QLabel(f'{"-"} V; {"-"} uA')
+        self.setv_button = QPushButton('setv')
+        self.setv_button.clicked.connect(self.setv)
+        self.v_spinbox = QSpinBox()
+        self.v_spinbox.setRange(-1100, 1100)
 
 
+        layout = QHBoxLayout()
+        layout.addWidget(self.on_button)
+        layout.addWidget(self.off_button)
+        layout.addWidget(self.lbl)
+        layout.addWidget(self.v_spinbox)
+        layout.addWidget(self.setv_button)
+
+        self.setLayout(layout)
+
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.meas)
+        self.timer.start(1000)
+
+    def on(self):
+        if core.hv_source is not None:
+            core.hv_source.on()
+
+    def off(self):
+        if core.hv_source is not None:
+            core.hv_source.off()
+
+    def setv(self):
+        if core.hv_source is not None:
+            core.hv_source.set_voltage(self.v_spinbox.value())
+
+    def meas(self):
+        if core.hv_source is not None:
+            v, i = core.hv_source.get_current()
+            self.lbl.setText(f'{v:.1f} V; {i/1e-6:.3f} uA')
 
 class AutoDisablingButton(QPushButton):
     """

@@ -7,6 +7,7 @@ from PyQt5.QtCore import QObject, pyqtSignal, QThread
 from instruments.motors.motor_controller import Motors
 from instruments.oscilloscope import Oscilloscope
 from instruments.temperature import TemperatureSensor
+from instruments.hv import HVSource
 
 
 class TCTController(QObject):
@@ -32,9 +33,28 @@ class TCTController(QObject):
         self.abort_measurement()
 
     def connect_instruments(self):
-        self.oscilloscope = Oscilloscope(self.visa_manager)
-        self.motors = Motors()
-        self.temperature = TemperatureSensor()
+        try:
+            self.oscilloscope = Oscilloscope(self.visa_manager)
+        except Exception:
+            pass
+
+        try:
+            self.hv_source = HVSource(self.visa_manager)
+        except Exception:
+            raise
+            pass
+
+        try:
+            self.motors = Motors()
+        except Exception:
+            pass
+
+
+
+        try:
+            self.temperature = TemperatureSensor()
+        except Exception:
+            pass
 
     def run_measurement(self, worker):
         """

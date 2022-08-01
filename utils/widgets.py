@@ -120,8 +120,8 @@ class ScopeControlWidget(QGroupBox):
         Force acquisition with scope, which will update cached wfs
         """
 
-        for i in range(3):
-            core.oscilloscope.get_waveform(i + 1)
+        for i in [1, 2]:
+            core.oscilloscope.get_waveform(i)
         self.refresh()
 
 

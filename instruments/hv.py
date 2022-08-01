@@ -36,8 +36,15 @@ class HVSource:
     def set_voltage(self, v):
         self.hv.write(f'SOUR:VOLT:IMM {v}')
 
+    def is_on(self):
+        return bool(int(self.hv.query('OUTPUT?')))
+
     def get_current(self):
-        self.hv.write('MEAS?')
-        msg = self.hv.read()
-        msg = [float(i) for i in msg.split(',')]
-        return msg[0], msg[1]
+        if self.is_on():
+            self.hv.write('MEAS?')
+            msg = self.hv.read()
+            msg = [float(i) for i in msg.split(',')]
+            v, i = msg[0], msg[1]
+            return v, i
+        else:
+            return float(self.hv.query('SOUR:VOLT?')), 0

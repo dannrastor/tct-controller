@@ -258,7 +258,7 @@ class HVWidget(QGroupBox):
         self.on_button.clicked.connect(self.on)
         self.off_button = QPushButton('off')
         self.off_button.clicked.connect(self.off)
-        self.lbl = QLabel(f'{"-"} V; {"-"} uA')
+        self.lbl = QLabel(f'State: {"-"}; {"-"} V; {"-"} uA')
         self.setv_button = QPushButton('setv')
         self.setv_button.clicked.connect(self.setv)
         self.v_spinbox = QSpinBox()
@@ -293,7 +293,8 @@ class HVWidget(QGroupBox):
     def meas(self):
         if core.hv_source is not None:
             v, i = core.hv_source.get_current()
-            self.lbl.setText(f'{v:.1f} V; {i/1e-6:.3f} uA')
+            state = 'ON' if core.hv_source.is_on() else 'OFF'
+            self.lbl.setText(f'State: {state}; {v:.1f} V; {i/1e-6:.3f} uA')
 
 class AutoDisablingButton(QPushButton):
     """

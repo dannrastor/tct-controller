@@ -16,6 +16,7 @@ class HVSource:
         except Exception:
             logging.critical('Failed to connect to the HV!')
             raise
+
         else:
             self.hv.write('SOUR:VOLT:RANG MAX')
             self.hv.write('SENS:FUNC:OFF:ALL')

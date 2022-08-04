@@ -105,6 +105,9 @@ class ScopeControlWidget(QGroupBox):
         Plot cached waveforms stored in oscilloscope object
         """
 
+        if core.oscilloscope is None:
+            return
+
         data = core.oscilloscope.cached_waveform
         self.figure.clear()
         axes = self.figure.add_subplot(111)
@@ -119,6 +122,9 @@ class ScopeControlWidget(QGroupBox):
         """
         Force acquisition with scope, which will update cached wfs
         """
+
+        if core.oscilloscope is None:
+            return
 
         for i in [1, 2]:
             core.oscilloscope.get_waveform(i)
@@ -258,7 +264,7 @@ class HVWidget(QGroupBox):
         self.on_button.clicked.connect(self.on)
         self.off_button = QPushButton('off')
         self.off_button.clicked.connect(self.off)
-        self.lbl = QLabel(f'State: {"-"}; {"-"} V; {"-"} uA')
+        self.lbl = QLabel('-')
         self.setv_button = QPushButton('setv')
         self.setv_button.clicked.connect(self.setv)
         self.v_spinbox = QSpinBox()
@@ -295,6 +301,9 @@ class HVWidget(QGroupBox):
             v, i = core.hv_source.get_current()
             state = 'ON' if core.hv_source.is_on() else 'OFF'
             self.lbl.setText(f'State: {state}; {v:.1f} V; {i/1e-6:.3f} uA')
+        else:
+            self.lbl.setText('State: Unconnected')
+
 
 class AutoDisablingButton(QPushButton):
     """

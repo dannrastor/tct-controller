@@ -19,10 +19,6 @@ class TCTController(QObject):
         super().__init__()
         self.visa_manager = pyvisa.ResourceManager('@py')
 
-        self.oscilloscope = None
-        self.motors = None
-        self.hv_source = None
-        self.temperature = None
 
         # FIXME replace with signals
         self.start_time = 0
@@ -36,24 +32,25 @@ class TCTController(QObject):
         try:
             self.oscilloscope = Oscilloscope(self.visa_manager)
         except Exception:
+            self.oscilloscope = None
             pass
 
         try:
             self.hv_source = HVSource(self.visa_manager)
         except Exception:
-            raise
+            self.hv_source = None
             pass
 
         try:
             self.motors = Motors()
         except Exception:
+            self.motors = None
             pass
-
-
 
         try:
             self.temperature = TemperatureSensor()
         except Exception:
+            self.temperature = None
             pass
 
     def run_measurement(self, worker):

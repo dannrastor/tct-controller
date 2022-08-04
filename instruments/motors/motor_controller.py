@@ -27,8 +27,12 @@ class Motors:
             device_count = ximc.get_device_count(device_enum)
             logging.info(f'ximc device count: {ximc.get_device_count(device_enum)}')
         except Exception:
-            logging.critical('Failed to connect to stage controller')
+            logging.critical('Failed to detect ximc devices')
             raise
+
+        if not device_count:
+            logging.critical('No ximc devices found!')
+            raise Exception()
 
         for device_index in range(device_count):
 

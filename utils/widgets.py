@@ -8,6 +8,7 @@ from matplotlib.figure import Figure
 from core import *
 from measurements.calibrate_instruments import CalibrateInstrumentsWorker
 from measurements.motor_scan import MotorScanWorker, MotorScanConfigureDialog
+from measurements.bias_scan import BiasScanWorker, BiasScanConfigureDialog
 
 
 
@@ -151,7 +152,7 @@ class MeasurementControlWidget(QGroupBox):
         self.fill_table()
 
         self.combobox = QComboBox()
-        self.combobox.addItems(['Calibrate instruments', 'Position scan'])
+        self.combobox.addItems(['Calibrate instruments', 'Position scan', 'Bias scan'])
 
         layout = QGridLayout()
         layout.addWidget(self.table, 0, 0, 3, 3)
@@ -177,6 +178,10 @@ class MeasurementControlWidget(QGroupBox):
             dialog = MotorScanConfigureDialog(parent=self)
             if dialog.exec():
                 core.run_measurement(MotorScanWorker(dialog.ret))
+        if s == 2:
+            dialog = BiasScanConfigureDialog(parent=self)
+            if dialog.exec():
+                core.run_measurement(BiasScanWorker(dialog.ret))
 
     def abort(self):
         dialog = QMessageBox(self)

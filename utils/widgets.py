@@ -11,10 +11,6 @@ from measurements.motor_scan import MotorScanWorker, MotorScanConfigureDialog
 from measurements.bias_scan import BiasScanWorker, BiasScanConfigureDialog
 
 
-
-
-
-
 class MotorControlWidget(QGroupBox):
     """
     Group of widgets for manual control and status display of a single stage
@@ -261,27 +257,28 @@ class TemperatureWidget(QGroupBox):
             if t2:
                 self.ch2_label.setText(f'Ch2:  {float(t2):.1f}{chr(176)}C')
 
+
 class HVWidget(QGroupBox):
     def __init__(self):
         super().__init__()
 
-        self.on_button = QPushButton('on')
-        self.on_button.clicked.connect(self.on)
-        self.off_button = QPushButton('off')
-        self.off_button.clicked.connect(self.off)
-        self.lbl = QLabel('-')
-        self.setv_button = QPushButton('setv')
+        self.on_button = QPushButton('On/Off')
+        self.on_button.clicked.connect(self.toggle)
+        self.iv_label = QLabel()
+        self.state_label = QLabel('-')
+        self.setv_button = AutoDisablingButton('Set voltage')
         self.setv_button.clicked.connect(self.setv)
         self.v_spinbox = QSpinBox()
         self.v_spinbox.setRange(-1100, 1100)
 
-
         layout = QHBoxLayout()
-        layout.addWidget(self.on_button)
-        layout.addWidget(self.off_button)
-        layout.addWidget(self.lbl)
+
+        layout.addWidget(QLabel('HV source'))
+        layout.addWidget(self.iv_label)
+        layout.addWidget(self.state_label)
         layout.addWidget(self.v_spinbox)
         layout.addWidget(self.setv_button)
+        layout.addWidget(self.on_button)
 
         self.setLayout(layout)
 
@@ -289,13 +286,12 @@ class HVWidget(QGroupBox):
         self.timer.timeout.connect(self.meas)
         self.timer.start(1000)
 
-    def on(self):
+    def toggle(self):
         if core.hv_source is not None:
-            core.hv_source.on()
-
-    def off(self):
-        if core.hv_source is not None:
-            core.hv_source.off()
+            if core.hv_source.is_on():
+                core.hv_source.off()
+            else:
+                core.hv_source.on()
 
     def setv(self):
         if core.hv_source is not None:
@@ -304,10 +300,10 @@ class HVWidget(QGroupBox):
     def meas(self):
         if core.hv_source is not None:
             v, i = core.hv_source.get_current()
-            state = 'ON' if core.hv_source.is_on() else 'OFF'
-            self.lbl.setText(f'State: {state}; {v:.1f} V; {i/1e-6:.3f} uA')
+            self.state_label.setText('ON' if core.hv_source.is_on() else 'OFF')
+            self.iv_label.setText(f'{v:.1f} V; {i / 1e-6:.3f} uA')
         else:
-            self.lbl.setText('State: Unconnected')
+            self.state_label.setText('Unconnected')
 
 
 class AutoDisablingButton(QPushButton):
@@ -316,6 +312,7 @@ class AutoDisablingButton(QPushButton):
     Could be created with negative=True, so it is disabled when a measurement is NOT running.
     Works by listening to core signals.
     """
+
     def __init__(self, text, negative=False):
         super().__init__(text)
         self.negative = negative

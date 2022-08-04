@@ -1,11 +1,16 @@
 import time
 import serial
+import logging
 
 
 class TemperatureSensor:
 
     def __init__(self):
-        self.arduino = serial.Serial(port='/dev/ttyACM3', baudrate=115200, timeout=0.01)
+        try:
+            self.arduino = serial.Serial(port='/dev/ttyACM3', baudrate=115200, timeout=0.01)
+        except Exception:
+            logging.critical('Failed to connect to temperature sensor!')
+            raise
 
     def get_value(self, ch):
         """Send a trigger to Arduino and read its response"""

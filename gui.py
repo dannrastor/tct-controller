@@ -1,4 +1,5 @@
 import sys
+import os
 
 from PyQt5.QtGui import QIcon
 
@@ -15,7 +16,9 @@ class TctGui(QMainWindow):
 
         self.setWindowTitle('TCT')
         self.setGeometry(500, 300, 1000, 800)
-        self.setWindowIcon(QIcon('./icon.png'))
+
+        dirname = os.path.dirname(os.path.abspath(__file__))
+        self.setWindowIcon(QIcon(os.path.join(dirname, './icon.png')))
 
         self.tabs = QTabWidget()
         self.create_hardware_tab()

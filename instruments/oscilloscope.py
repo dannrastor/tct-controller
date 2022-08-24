@@ -44,6 +44,12 @@ class Oscilloscope:
         raw_wf = self._get_raw_waveform(ch)
         data = self._parse_raw_waveform(raw_wf)
 
+        # Try to recapture wf if it is empty
+        while (data[1].size == 0):
+            # logging.info('DAQ failed')
+            raw_wf = self._get_raw_waveform(ch)
+            data = self._parse_raw_waveform(raw_wf)
+
         # Try to reset trigger if it is stuck
         if ch in self.cached_waveform:
             while (self.cached_waveform[ch][1] == data[1]).all():
@@ -52,7 +58,6 @@ class Oscilloscope:
                 self.unstuck()
                 raw_wf = self._get_raw_waveform(ch)
                 data = self._parse_raw_waveform(raw_wf)
-
 
         self.cached_waveform[ch] = data
         return data

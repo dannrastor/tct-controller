@@ -7,7 +7,7 @@ class TemperatureSensor:
 
     def __init__(self):
         try:
-            self.arduino = serial.Serial(port='/dev/ttyACM3', baudrate=115200, timeout=0.01)
+            self.arduino = serial.Serial(port='/dev/ttyACM1', baudrate=115200, timeout=0.01)
         except Exception:
             logging.critical('Failed to connect to temperature sensor!')
             raise

@@ -46,9 +46,12 @@ class Oscilloscope:
 
         # Try to recapture wf if it is empty
         while (data[1].size == 0):
-            # logging.info('DAQ failed')
+            logging.info('DAQ failed')
+            self.unstuck()
             raw_wf = self._get_raw_waveform(ch)
             data = self._parse_raw_waveform(raw_wf)
+
+
 
         # Try to reset trigger if it is stuck
         if ch in self.cached_waveform:

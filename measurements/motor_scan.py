@@ -42,6 +42,7 @@ class MotorScanWorker(AsyncWorker):
                     # Controller response time is several ms
 
                     time.sleep(0.05)
+
                     while core.motors.is_moving('x') or core.motors.is_moving('y') or core.motors.is_moving('z'):
                         time.sleep(0.05)
 
@@ -127,7 +128,7 @@ class MotorScanConfigureDialog(QDialog):
         channel_layout = QHBoxLayout()
         self.channel_ticks = []
         for i in range(3):
-            self.channel_ticks.append(QCheckBox(f'CH{i+1}'))
+            self.channel_ticks.append(QCheckBox(f'CH{i + 1}'))
             channel_layout.addWidget(self.channel_ticks[i])
             if i + 1 in MotorScanConfigureDialog.cached_settings['channels']:
                 self.channel_ticks[i].setChecked(True)
@@ -166,18 +167,18 @@ class MotorScanConfigureDialog(QDialog):
             '', '')[0])
 
     def extract_settings(self):
-        f = lambda x: tuple([i.value() for i in self.inputs[x:x+3]])
+        f = lambda x: tuple([i.value() for i in self.inputs[x:x + 3]])
         xrange, yrange, zrange = f(0), f(3), f(6)
         output_path = self.filename.text()
         save_integral = self.save_integral_button.isChecked()
-        channels = [i+1 for i, button in enumerate(self.channel_ticks) if button.isChecked()]
+        channels = [i + 1 for i, button in enumerate(self.channel_ticks) if button.isChecked()]
 
         ret = {'xrange': xrange,
-                    'yrange': yrange,
-                    'zrange': zrange,
-                    'path': output_path,
-                    'channels': channels,
-                    'save_integral': save_integral}
+               'yrange': yrange,
+               'zrange': zrange,
+               'path': output_path,
+               'channels': channels,
+               'save_integral': save_integral}
         return ret
 
     def decline(self):
@@ -192,7 +193,7 @@ class MotorScanConfigureDialog(QDialog):
         Executes on 'ok' click. Check correctness of user input. If correct, exit dialog and store data in its self.ret attribute
         """
 
-        f = lambda x: tuple([i.value() for i in self.inputs[x:x+3]])
+        f = lambda x: tuple([i.value() for i in self.inputs[x:x + 3]])
         xrange, yrange, zrange = f(0), f(3), f(6)
         output_path = self.filename.text()
 

@@ -78,6 +78,7 @@ class Oscilloscope:
 
     def _get_raw_waveform(self, ch):
 
+        self.scope.write(f'C{ch}:TRACE ON')
         self.scope.write('WFSU SP, 0, NP, 0, FP, 0, SN, 0')
         time.sleep(0.01)
         self.scope.write(f'C{ch}:WF?')

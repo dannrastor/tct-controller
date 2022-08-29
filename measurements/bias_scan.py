@@ -51,7 +51,7 @@ class BiasScanWorker(AsyncWorker):
 
 class BiasScanConfigureDialog(QDialog):
     default_settings = {'vrange': (0, 101, 5),
-                        'path': '/home/drastorg/tct/out.pickle',
+                        'path': '/home/drastorg/tct/data/out.pickle',
                         'channels': [1, 2],
                         }
     cached_settings = default_settings

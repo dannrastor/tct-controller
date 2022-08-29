@@ -72,8 +72,8 @@ class MotorScanWorker(AsyncWorker):
 class MotorScanConfigureDialog(QDialog):
     default_settings = {'xrange': (0, 1000, 100),
                         'yrange': (0, 1000, 100),
-                        'zrange': (0, 1000, 100),
-                        'path': '/home/drastorg/tct/out.pickle',
+                        'zrange': (0, 1, 1),
+                        'path': '/home/drastorg/tct/data/out.pickle',
                         'channels': [1, 2],
                         'save_integral': True}
     cached_settings = default_settings

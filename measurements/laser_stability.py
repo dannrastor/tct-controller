@@ -1,11 +1,3 @@
-import os
-import pickle
-import time
-
-import numpy
-from PyQt5.QtWidgets import *
-
-import core
 from core import *
 from measurements.async_worker import AsyncWorker
 
@@ -20,7 +12,7 @@ class LaserStabilityWorker(AsyncWorker):
 
         # Main loop over measurement steps
         for i in range(total_steps):
-            # Check for abort request every iteration
+            # Check for abort request
             if QThread.currentThread().isInterruptionRequested():
                 # If received, break measurement loop
                 break

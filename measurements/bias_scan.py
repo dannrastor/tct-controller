@@ -31,12 +31,14 @@ class BiasScanWorker(AsyncWorker):
 
             time.sleep(1)
 
-            self.result[voltage] = {}
 
             for ch in self.settings['channels']:
+                if ch not in self.result:
+                    self.result[ch] = {}
+
                 if core.oscilloscope is not None:
                     t, v = core.oscilloscope.get_waveform(ch)
-                    self.result[voltage][ch] = t, v
+                    self.result[ch][voltage] = t, v
 
             current_steps += 1
             core.measurement_state = current_steps, total_steps

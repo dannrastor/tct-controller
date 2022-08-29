@@ -48,14 +48,17 @@ class MotorScanWorker(AsyncWorker):
 
                     time.sleep(0.5)
 
-                    self.result[(x, y, z)] = {}
+                    # self.result[(x, y, z)] = {}
                     for ch in self.settings['channels']:
+                        if ch not in self.result:
+                            self.result[ch] = {}
+
                         if core.oscilloscope is not None:
                             t, v = core.oscilloscope.get_waveform(ch)
                         if self.settings['save_integral']:
-                            self.result[(x, y, z)][ch] = numpy.sum(v)
+                            self.result[ch][(x, y, z)] = numpy.sum(v)
                         else:
-                            self.result[(x, y, z)][ch] = t, v
+                            self.result[ch][(x, y, z)] = t, v
 
                     current_steps += 1
                     core.measurement_state = current_steps, total_steps

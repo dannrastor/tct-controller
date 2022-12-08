@@ -1,13 +1,17 @@
 import time
 import serial
 import logging
-
+import os
 
 class TemperatureSensor:
 
     def __init__(self):
+        path = '/dev/ttyACM3'
         try:
-            self.arduino = serial.Serial(port='/dev/ttyACM1', baudrate=115200, timeout=0.01)
+            if not os.path.exists(path):
+                raise Exception
+            self.arduino = serial.Serial(port=path, baudrate=115200, timeout=0.01)
+
         except Exception:
             logging.critical('Failed to connect to temperature sensor!')
             raise

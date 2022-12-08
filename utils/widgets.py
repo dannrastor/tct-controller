@@ -1,4 +1,5 @@
-from datetime import timedelta
+import datetime
+import os
 
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import QTimer
@@ -83,6 +84,8 @@ class ScopeControlWidget(QGroupBox):
     def __init__(self):
         super().__init__()
         layout = QVBoxLayout()
+        button_area = QWidget()
+        buttons_layout = QHBoxLayout()
 
         self.figure = Figure(figsize=(10, 10))
 
@@ -91,12 +94,18 @@ class ScopeControlWidget(QGroupBox):
         self.fetch_button = AutoDisablingButton('Fetch waveform')
         self.fetch_button.clicked.connect(self.fetch)
 
+        self.screenshot_button = QPushButton('Save screenshot')
+        self.screenshot_button.clicked.connect(self.screenshot)
+
         self.timer = QTimer()
         self.timer.timeout.connect(self.refresh)
         self.timer.start(100)
 
         layout.addWidget(self.canvas)
-        layout.addWidget(self.fetch_button)
+        buttons_layout.addWidget(self.fetch_button)
+        buttons_layout.addWidget(self.screenshot_button)
+        button_area.setLayout(buttons_layout)
+        layout.addWidget(button_area)
         self.setLayout(layout)
 
     def refresh(self):
@@ -128,6 +137,19 @@ class ScopeControlWidget(QGroupBox):
         for i in [1, 2]:
             core.oscilloscope.get_waveform(i)
         self.refresh()
+
+    def screenshot(self):
+        if core.oscilloscope is None:
+            return
+
+        datetime_str = datetime.datetime.now().strftime('%d-%m-%Y_%H:%M:%S')
+        filename = 'screenshot_' + datetime_str + '.png'
+        path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../screenshots', filename))
+        core.oscilloscope.save_screenshot(path)
+        logging.info('Saved screenshot: ' + path)
+
+
+
 
 
 class MeasurementControlWidget(QGroupBox):
@@ -224,10 +246,10 @@ class MeasurementControlWidget(QGroupBox):
             f(2, 1, ms[0])
             f(3, 1, ms[1])
             elapsed_time = int(time.time()) - core.start_time
-            f(4, 1, timedelta(seconds=elapsed_time))
+            f(4, 1, datetime.timedelta(seconds=elapsed_time))
             if ms[0]:
                 remaining_time = int(elapsed_time * (ms[1] - ms[0]) / ms[0])
-                f(5, 1, timedelta(seconds=remaining_time))
+                f(5, 1, datetime.timedelta(seconds=remaining_time))
         else:
             f(0, 1, 'IDLE')
             for i in range(1, 6):

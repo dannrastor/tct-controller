@@ -9,9 +9,9 @@ class LaserStabilityWorker(AsyncWorker):
 
     def action(self):
 
-        xrange = range(16700, 17500, 5)  # range(*self.settings['xrange'])
+        xrange = range(16700, 16901, 5)  # range(*self.settings['xrange'])
 
-        counter_max = 51
+        counter_max = 675
         total_steps = len(xrange) * counter_max
 
         core.measurement_state = 0, total_steps

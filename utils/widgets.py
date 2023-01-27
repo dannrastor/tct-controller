@@ -11,7 +11,7 @@ from measurements.calibrate_instruments import CalibrateInstrumentsWorker
 from measurements.motor_scan import MotorScanWorker, MotorScanConfigureDialog
 from measurements.bias_scan import BiasScanWorker, BiasScanConfigureDialog
 from measurements.laser_stability import LaserStabilityWorker
-from measurements.focus_check import FocusCheckWorker, FocusCheckConfigureDialog
+from measurements.external_control import ExternalControlWorker
 
 
 class MotorControlWidget(QGroupBox):
@@ -172,7 +172,7 @@ class MeasurementControlWidget(QGroupBox):
         self.fill_table()
 
         self.combobox = QComboBox()
-        self.combobox.addItems(['Calibrate instruments', 'Position scan', 'Bias scan', 'Laser stability', 'Focus (one-shot)'])
+        self.combobox.addItems(['Calibrate instruments', 'Position scan', 'Bias scan', 'Laser stability', 'External control'])
 
         layout = QGridLayout()
         layout.addWidget(self.table, 0, 0, 3, 3)
@@ -205,9 +205,7 @@ class MeasurementControlWidget(QGroupBox):
         if s == 3:
             core.run_measurement(LaserStabilityWorker())
         if s == 4:
-            dialog = FocusCheckConfigureDialog(parent=self)
-            if dialog.exec():
-                core.run_measurement(FocusCheckWorker(dialog.ret))
+            core.run_measurement(ExternalControlWorker())
 
     def abort(self):
         dialog = QMessageBox(self)

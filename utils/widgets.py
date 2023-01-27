@@ -296,7 +296,7 @@ class HVWidget(QGroupBox):
         self.state_label = QLabel('-')
         self.setv_button = AutoDisablingButton('Set voltage')
         self.setv_button.clicked.connect(self.setv)
-        self.v_spinbox = QSpinBox()
+        self.v_spinbox = QDoubleSpinBox()
         self.v_spinbox.setRange(-1100, 1100)
 
         layout = QHBoxLayout()

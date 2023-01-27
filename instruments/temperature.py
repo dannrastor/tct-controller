@@ -6,7 +6,7 @@ import os
 class TemperatureSensor:
 
     def __init__(self):
-        path = '/dev/ttyACM3'
+        path = '/dev/ttyACM6'
         try:
             if not os.path.exists(path):
                 raise Exception

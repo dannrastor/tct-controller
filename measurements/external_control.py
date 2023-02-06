@@ -1,48 +1,44 @@
 from core import *
 from measurements.async_worker import AsyncWorker
 import socket
+import select
 
 
 class ExternalControlWorker(AsyncWorker):
-
     description = 'Remote control via network'
 
     def action(self):
-        # get the hostname
+
+        # Initialize a socket, listening for a connection
         host = socket.gethostname()
-        port = 5000  # initiate port no above 1024
+        port = 5000
+        server_socket = socket.socket()
+        server_socket.bind((host, port))
 
-        server_socket = socket.socket()  # get instance
-        # look closely. The bind() function takes tuple as argument
-        server_socket.bind((host, port))  # bind host address and port together
-
-        # configure how many client the server can listen simultaneously
-        server_socket.settimeout(1)
+        # Listen for a connection but check for interrupt request from time to time
+        server_socket.settimeout(0.5)
         conn, address = None, None
-
         logging.info("Waiting for a client...")
         while True:
             if QThread.currentThread().isInterruptionRequested():
+                server_socket.close()
                 return
             try:
                 server_socket.listen(1)
                 conn, address = server_socket.accept()  # accept new connection
+                logging.info("Connection from: " + str(address))
                 break
             except socket.timeout:
                 pass
 
-        logging.info("Connection from: " + str(address))
-
+        # Listen for data but check for interrupt request from time to time
+        conn.settimeout(0.5)
         while True:
             if QThread.currentThread().isInterruptionRequested():
-                break
-            # receive data stream. it won't accept data packet greater than 1024 bytes
+                conn.close()
+                return
             try:
-                data = conn.recv(1024).decode()
+                data = conn.recv(4096).decode()
                 logging.info("from connected user: " + str(data))
             except socket.timeout:
                 pass
-
-
-
-        conn.close()  # close the connection

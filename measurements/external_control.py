@@ -39,6 +39,7 @@ class ExternalControlWorker(AsyncWorker):
                 return
             try:
                 data = conn.recv(4096).decode()
-                logging.info("from connected user: " + str(data))
+                if data:
+                    logging.info("from connected user: " + str(data))
             except socket.timeout:
                 pass

@@ -1,15 +1,31 @@
 import socket
 
-host = socket.gethostname()  # as both code is running on same pc
-port = 5000  # socket server port number
+class TCTClient:
+    def __init__(self, address, port):
+        self.client_socket = socket.socket()  # instantiate
+        try:
+            self.client_socket.connect((address, port))  # connect to the server
+            print(f'Connected to {address}:{port}')
+        except ConnectionError:
+            print(f'Failed to connect to {address}:{port}')
+            raise
 
-client_socket = socket.socket()  # instantiate
-client_socket.connect((host, port))  # connect to the server
+    def __del__(self):
+        self.client_socket.close()
 
-message = input(" -> ")  # take input
+    def send(self, msg):
+        self.client_socket.send(msg.encode())
 
-while message.lower().strip() != 'bye':
-    client_socket.send(message.encode())  # send message
-    message = input(" -> ")  # again take input
 
-client_socket.close()  # close the connection
+if __name__ == '__main__':
+    # Run a debug session
+    address = socket.gethostname()  # localhost
+    port = 5000
+
+    tct = TCTClient(address, port)
+    while True:
+        msg = input("> ")  # again take input
+        tct.send(msg)
+
+
+

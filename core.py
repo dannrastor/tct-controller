@@ -77,7 +77,8 @@ class TCTController(QObject):
         self.start_time = int(time.time())
 
         logging.info(f'Measurement starting: {self.worker.description}')
-        logging.info(f'Settings: {self.worker.settings}')
+        if self.worker.settings is not None:
+            logging.info(f'Settings: {self.worker.settings}')
         self.thread.start()
 
     def abort_measurement(self):

@@ -11,7 +11,7 @@ class ExternalControlWorker(AsyncWorker):
 
         # Initialize a socket, listening for a connection
         host = socket.gethostname()
-        port = 5000
+        port = 8888
         server_socket = socket.socket()
         server_socket.bind((host, port))
 
@@ -40,6 +40,32 @@ class ExternalControlWorker(AsyncWorker):
             try:
                 data = conn.recv(4096).decode()
                 if data:
-                    logging.info("from connected user: " + str(data))
+                    msg = str(data)
+                    logging.info(f'from connected user: {msg}')
+                    self.process_message(msg)
             except socket.timeout:
                 pass
+
+    def process_message(self, msg):
+        if msg == 'stop':
+            QThread.currentThread().requestInterruption()
+
+        if msg.startswith('move'):
+            xyz = msg.split(' ')[1:]
+            if core.motors is not None:
+                core.motors.move_abs('x', float(xyz[0]))
+                core.motors.move_abs('y', float(xyz[1]))
+                core.motors.move_abs('z', float(xyz[2]))
+
+        if msg.startswith('hv'):
+            cmd = msg.split(' ')[1]
+            if core.hv_source is not None:
+                if cmd == 'on':
+                    core.hv_source.on()
+                elif cmd == 'off':
+                    core.hv_source.off()
+                else:
+                    core.hv_source.set_voltage(float(cmd))
+
+
+

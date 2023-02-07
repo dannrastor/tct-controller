@@ -1,5 +1,6 @@
 import socket
 
+
 class TCTClient:
     def __init__(self, address, port):
         self.client_socket = socket.socket()  # instantiate
@@ -64,6 +65,3 @@ if __name__ == '__main__':
     while True:
         msg = input("> ")  # again take input
         tct._send(msg)
-
-
-

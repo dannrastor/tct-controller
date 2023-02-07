@@ -35,6 +35,7 @@ class ExternalControlWorker(AsyncWorker):
         conn.settimeout(0.5)
         while True:
             if QThread.currentThread().isInterruptionRequested():
+                server_socket.close()
                 conn.close()
                 return
             try:

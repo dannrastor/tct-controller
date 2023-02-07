@@ -75,7 +75,8 @@ class Motors:
         pos = get_position_t()
         ximc.get_position(self.ids[axis], byref(pos))
         # microsteps ignored
-        return pos.Position
+        steps, usteps = pos.Position, pos.uPosition
+        return steps_to_mm(steps, usteps)
 
     def is_moving(self, axis):
         status = status_t()
@@ -83,17 +84,19 @@ class Motors:
 
         return bool(status.MoveSts)
 
-    def move_abs(self, axis, steps):
+    def move_abs(self, axis, mm):
         """
         Request absolute movement of the stage.
         If requested position is beyond physical limits, move to that limit instead.
         """
 
         # logging.info(f'Absolute movement: {axis}->{steps}')
+        steps, usteps = mm_to_steps(mm)
+
         steps = min(40000, steps)
         steps = max(0, steps)
         # microsteps ignored
-        ximc.command_move(self.ids[axis], steps, 0)
+        ximc.command_move(self.ids[axis], steps, usteps)
 
     def move_rel(self, axis, steps):
         destination = steps + self.get_position(axis)

@@ -29,8 +29,9 @@ class MotorControlWidget(QGroupBox):
         self.pos_label = QLabel()
         self.status_label = QLabel('-')
 
-        self.spinbox = QSpinBox()
-        self.spinbox.setRange(-40000, 40000)
+        self.spinbox = QDoubleSpinBox()
+        self.spinbox.setRange(-50, 50)
+        self.spinbox.setDecimals(4)
 
         self.move_abs_button = AutoDisablingButton('Move absolute')
         self.move_abs_button.clicked.connect(self.request_abs_move)
@@ -55,7 +56,7 @@ class MotorControlWidget(QGroupBox):
             return
 
         pos = core.motors.get_position(self.axis)
-        self.pos_label.setText(f'{pos} steps')
+        self.pos_label.setText(f'{pos:.4f} mm')
 
         if core.is_measurement_running:
             if core.worker.description == 'Calibration':
@@ -147,9 +148,6 @@ class ScopeControlWidget(QGroupBox):
         path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../screenshots', filename))
         core.oscilloscope.save_screenshot(path)
         logging.info('Saved screenshot: ' + path)
-
-
-
 
 
 class MeasurementControlWidget(QGroupBox):

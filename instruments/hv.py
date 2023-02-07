@@ -18,7 +18,6 @@ class HVSource:
             raise
 
         else:
-            self.hv.write('SOUR:VOLT:RANG MAX')
             self.hv.write('SENS:FUNC:OFF:ALL')
             self.hv.write('SENS:FUNC:ON "CURR"')
 
@@ -35,6 +34,12 @@ class HVSource:
         self.hv.write('OUTPUT OFF\r')
 
     def set_voltage(self, v):
+        voltage_ranges = [20, 100, 200, 1100]
+        for limit in voltage_ranges:
+            if v < limit:
+                self.hv.write(f'SOUR:VOLT:RANGE {limit}')
+                break
+
         self.hv.write(f'SOUR:VOLT:IMM {v}')
 
     def is_on(self):

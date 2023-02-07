@@ -17,9 +17,9 @@ class MotorScanWorker(AsyncWorker):
         self.result = {}
         self.result['settings'] = self.settings
 
-        xrange = range(*self.settings['xrange'])
-        yrange = range(*self.settings['yrange'])
-        zrange = range(*self.settings['zrange'])
+        xrange = numpy.arange(*self.settings['xrange'])
+        yrange = numpy.arange(*self.settings['yrange'])
+        zrange = numpy.arange(*self.settings['zrange'])
 
         current_steps = 0
         total_steps = len(xrange) * len(yrange) * len(zrange)
@@ -38,15 +38,15 @@ class MotorScanWorker(AsyncWorker):
                         core.motors.move_abs('y', y)
                         core.motors.move_abs('z', z)
 
-                    # Delay between move command and state check is crucial, the latter fails otherwise
-                    # Controller response time is several ms
+                        # Delay between move command and state check is crucial, the latter fails otherwise
+                        # Controller response time is several ms
 
-                    time.sleep(0.05)
-
-                    while core.motors.is_moving('x') or core.motors.is_moving('y') or core.motors.is_moving('z'):
                         time.sleep(0.05)
 
-                    time.sleep(0.5)
+                        while core.motors.is_moving('x') or core.motors.is_moving('y') or core.motors.is_moving('z'):
+                            time.sleep(0.05)
+
+                        time.sleep(0.5)
 
                     # self.result[(x, y, z)] = {}
                     for ch in self.settings['channels']:
@@ -55,10 +55,10 @@ class MotorScanWorker(AsyncWorker):
 
                         if core.oscilloscope is not None:
                             t, v = core.oscilloscope.get_waveform(ch)
-                        if self.settings['save_integral']:
-                            self.result[ch][(x, y, z)] = numpy.sum(v)
-                        else:
-                            self.result[ch][(x, y, z)] = t, v
+                            if self.settings['save_integral']:
+                                self.result[ch][(x, y, z)] = numpy.sum(v)
+                            else:
+                                self.result[ch][(x, y, z)] = t, v
 
                     current_steps += 1
                     core.measurement_state = current_steps, total_steps
@@ -70,8 +70,8 @@ class MotorScanWorker(AsyncWorker):
 
 
 class MotorScanConfigureDialog(QDialog):
-    default_settings = {'xrange': (0, 1000, 100),
-                        'yrange': (0, 1000, 100),
+    default_settings = {'xrange': (0, 40.1, 10),
+                        'yrange': (0, 40.1, 10),
                         'zrange': (0, 1, 1),
                         'path': '/home/drastorg/tct/data/out.pickle',
                         'channels': [1, 2],
@@ -96,10 +96,11 @@ class MotorScanConfigureDialog(QDialog):
         range_box_layout = QGridLayout()
         for i in range(9):
             range_box_layout.addWidget(QLabel(texts[i]), i // 3, (i % 3) * 2)
-            spinbox = QSpinBox()
-            spinbox.setRange(0, 40000)
+            spinbox = QDoubleSpinBox()
+            spinbox.setDecimals(4)
+            spinbox.setRange(0, 50)
             if (i % 3 == 2):
-                spinbox.setRange(-40000, 40000)
+                spinbox.setRange(-50, 50)
             spinbox.setValue(MotorScanConfigureDialog.cached_settings[values[i][0]][values[i][1]])
 
             self.inputs.append(spinbox)
@@ -203,7 +204,7 @@ class MotorScanConfigureDialog(QDialog):
         if not (xrange[2] and yrange[2] and zrange[2]):
             QMessageBox(QMessageBox.Warning, 'Configuration error', 'Step can\'t be 0!', parent=self).exec()
             return
-        if not (len(range(*xrange)) and len(range(*yrange)) and len(range(*zrange))):
+        if not (len(numpy.arange(*xrange)) and len(numpy.arange(*yrange)) and len(numpy.arange(*zrange))):
             QMessageBox(QMessageBox.Warning, 'Configuration error', 'Must be at least one step!', parent=self).exec()
             return
         if not os.path.exists(os.path.dirname(output_path)):

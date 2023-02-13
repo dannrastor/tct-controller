@@ -1,4 +1,5 @@
 import socket
+import time
 
 class TCTClient:
     def __init__(self, address, port):
@@ -18,6 +19,8 @@ class TCTClient:
         Internal use.
         """
         self.client_socket.send(msg.encode())
+        # Sleep to avoid consecutive commands sticking together
+        time.sleep(0.001)
 
     def move(self, x, y, z):
         """

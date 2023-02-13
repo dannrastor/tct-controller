@@ -27,7 +27,7 @@ class HVSource:
 
     def __del__(self):
         if hasattr(self, 'hv'):
-            logging.info('Closing connection to oscilloscope!')
+            logging.info('Closing connection to HV!')
             self.hv.close()
 
     def on(self):

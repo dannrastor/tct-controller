@@ -4,19 +4,21 @@ import itertools
 import numpy
 
 from utils.gui_logger import *
+from utils.config import *
 
 
-scope_ip = '169.254.40.151'
+
 
 
 class Oscilloscope:
     def __init__(self, resource_manager):
+        _config = config['instruments']['oscilloscope']
         try:
-            self.scope = resource_manager.open_resource(f'TCPIP0::{scope_ip}::INSTR')
+            self.scope = resource_manager.open_resource(_config['address'])
         except Exception:
             logging.critical('Failed to connect to oscilloscope!')
 
-        self.scope.timeout = 5000
+        self.scope.timeout = _config['timeout']
 
         try:
             self.scope.write('*IDN?')

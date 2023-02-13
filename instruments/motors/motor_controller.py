@@ -3,9 +3,10 @@ import logging
 
 from instruments.motors.pyximc import *
 from instruments.motors.stage_config import set_profile_8MT30_50
+from utils.config import *
 
 
-sn_to_axis = {31015: 'x', 31016: 'y', 30954: 'z'}
+sn_to_axis = {v: k for k, v in config['instruments']['motors']['axis_id'].items()}
 
 
 def steps_to_mm(steps, usteps):

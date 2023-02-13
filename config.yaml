@@ -1,0 +1,21 @@
+calibrate_on_launch: False
+remote_port: 8888
+
+instruments:
+    oscilloscope:
+        address: TCPIP0::169.254.40.151::INSTR
+        timeout: 5000
+    hv:
+        address: ASRL/dev/ttyUSB1::INSTR
+        baud_rate: 19200
+        timeout: 2000
+        eol: '\r'
+    temperature:
+        address: /dev/ttyACM6
+        baud_rate: 115200
+        timeout: 0.01
+    motors:
+        axis_id:
+            x: 31015
+            y: 31016
+            z: 30954

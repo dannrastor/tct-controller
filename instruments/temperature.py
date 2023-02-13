@@ -2,15 +2,18 @@ import time
 import serial
 import logging
 import os
+from utils.config import *
+
 
 class TemperatureSensor:
 
     def __init__(self):
-        path = '/dev/ttyACM6'
+        _config = config['instruments']['temperature']
+        path = _config['address']
         try:
             if not os.path.exists(path):
                 raise Exception
-            self.arduino = serial.Serial(port=path, baudrate=115200, timeout=0.01)
+            self.arduino = serial.Serial(port=path, baudrate=_config['baud_rate'], timeout=_config['timeout'])
 
         except Exception:
             logging.critical('Failed to connect to temperature sensor!')

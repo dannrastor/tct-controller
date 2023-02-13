@@ -1,14 +1,17 @@
 import logging
 import time
+from utils.config import *
 
 class HVSource:
 
     def __init__(self, resource_manager):
         try:
-            self.hv = resource_manager.open_resource('ASRL/dev/ttyUSB1::INSTR')
-            self.hv.timeout = 2000
-            self.hv.baud_rate = 19200
-            self.hv.read_termination = '\r'
+            _config = config['instruments']['hv']
+
+            self.hv = resource_manager.open_resource(_config['address'])
+            self.hv.timeout = _config['timeout']
+            self.hv.baud_rate = _config['baud_rate']
+            self.hv.read_termination = _config['eol']
 
             self.hv.write('*IDN?\r')
             msg = self.hv.read()

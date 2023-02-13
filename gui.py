@@ -5,8 +5,8 @@ from PyQt5.QtGui import QIcon
 
 from utils.gui_logger import *
 from utils.widgets import *
+from utils.config import *
 from measurements.calibrate_instruments import CalibrateInstrumentsWorker
-
 
 
 class TctGui(QMainWindow):
@@ -52,9 +52,6 @@ class TctGui(QMainWindow):
         self.tabs.addTab(self.log_view, 'Log')
 
 
-
-
-
 if __name__ == '__main__':
     app = QApplication([])
     gui = TctGui()
@@ -66,6 +63,7 @@ if __name__ == '__main__':
     timer.timeout.connect(lambda: None)
 
     core.connect_instruments()
-    core.run_measurement(CalibrateInstrumentsWorker())
+    if config['calibrate_on_launch']:
+        core.run_measurement(CalibrateInstrumentsWorker())
 
     sys.exit(app.exec())

@@ -1,7 +1,7 @@
 from core import *
 from measurements.async_worker import AsyncWorker
 import socket
-import select
+from utils.config import *
 
 
 class ExternalControlWorker(AsyncWorker):
@@ -11,7 +11,7 @@ class ExternalControlWorker(AsyncWorker):
 
         # Initialize a socket, listening for a connection
         host = socket.gethostname()
-        port = 8888
+        port = config['remote_port']
         server_socket = socket.socket()
         server_socket.bind((host, port))
 

@@ -7,10 +7,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 
 from core import *
-from measurements.calibrate_instruments import CalibrateInstrumentsWorker
-from measurements.motor_scan import MotorScanWorker, MotorScanConfigureDialog
-from measurements.bias_scan import BiasScanWorker, BiasScanConfigureDialog
-from measurements.external_control import ExternalControlWorker
+from utils.module_manager import available_workers
 
 
 class MotorControlWidget(QGroupBox):
@@ -169,7 +166,8 @@ class MeasurementControlWidget(QGroupBox):
         self.fill_table()
 
         self.combobox = QComboBox()
-        self.combobox.addItems(['Calibrate instruments', 'Position scan', 'Bias scan', 'External control'])
+        items = [obj.description for obj in available_workers]
+        self.combobox.addItems(items)
 
         layout = QGridLayout()
         layout.addWidget(self.table, 0, 0, 3, 3)
@@ -189,18 +187,13 @@ class MeasurementControlWidget(QGroupBox):
 
     def configure_and_run(self):
         s = self.combobox.currentIndex()
-        if s == 0:
-            core.run_measurement(CalibrateInstrumentsWorker())
-        if s == 1:
-            dialog = MotorScanConfigureDialog(parent=self)
+        obj = available_workers[s]
+        if obj.has_dialog:
+            dialog = obj.Dialog(parent=self)
             if dialog.exec():
-                core.run_measurement(MotorScanWorker(dialog.ret))
-        if s == 2:
-            dialog = BiasScanConfigureDialog(parent=self)
-            if dialog.exec():
-                core.run_measurement(BiasScanWorker(dialog.ret))
-        if s == 3:
-            core.run_measurement(ExternalControlWorker())
+                core.run_measurement(obj(dialog.ret))
+        else:
+            core.run_measurement(obj())
 
     def abort(self):
         dialog = QMessageBox(self)

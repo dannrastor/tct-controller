@@ -4,6 +4,10 @@ from PyQt5.QtCore import QObject, pyqtSignal
 class AsyncWorker(QObject):
     finished = pyqtSignal()
 
+    has_dialog = False
+    dialog = None
+    description = 'Virtual class'
+
     def __init__(self, settings=None):
         super().__init__()
         self.settings = settings

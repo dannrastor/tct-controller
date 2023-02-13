@@ -5,6 +5,7 @@ from utils.config import *
 
 
 class ExternalControlWorker(AsyncWorker):
+
     description = 'Remote control via network'
 
     def action(self):

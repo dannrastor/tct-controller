@@ -10,7 +10,6 @@ from core import *
 from measurements.calibrate_instruments import CalibrateInstrumentsWorker
 from measurements.motor_scan import MotorScanWorker, MotorScanConfigureDialog
 from measurements.bias_scan import BiasScanWorker, BiasScanConfigureDialog
-from measurements.laser_stability import LaserStabilityWorker
 from measurements.external_control import ExternalControlWorker
 
 
@@ -170,7 +169,7 @@ class MeasurementControlWidget(QGroupBox):
         self.fill_table()
 
         self.combobox = QComboBox()
-        self.combobox.addItems(['Calibrate instruments', 'Position scan', 'Bias scan', 'Laser stability', 'External control'])
+        self.combobox.addItems(['Calibrate instruments', 'Position scan', 'Bias scan', 'External control'])
 
         layout = QGridLayout()
         layout.addWidget(self.table, 0, 0, 3, 3)
@@ -201,8 +200,6 @@ class MeasurementControlWidget(QGroupBox):
             if dialog.exec():
                 core.run_measurement(BiasScanWorker(dialog.ret))
         if s == 3:
-            core.run_measurement(LaserStabilityWorker())
-        if s == 4:
             core.run_measurement(ExternalControlWorker())
 
     def abort(self):

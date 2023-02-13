@@ -9,7 +9,7 @@ instruments:
         address: ASRL/dev/ttyUSB1::INSTR
         baud_rate: 19200
         timeout: 2000
-        eol: '\r'
+        eol: "\r"
     temperature:
         address: /dev/ttyACM6
         baud_rate: 115200

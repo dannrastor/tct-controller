@@ -39,7 +39,7 @@ class HVSource:
     def set_voltage(self, v):
         voltage_ranges = [20, 100, 200, 1100]
         for limit in voltage_ranges:
-            if v < limit:
+            if abs(v) < limit:
                 self.hv.write(f'SOUR:VOLT:RANGE {limit}')
                 break
 

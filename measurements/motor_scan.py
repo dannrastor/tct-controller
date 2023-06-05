@@ -21,7 +21,7 @@ class MotorScanWorker(AsyncWorker):
 
         self.result = {}
         self.result['settings'] = self.settings
-
+        self.result['currents'] = {}
         xrange = numpy.arange(*self.settings['xrange'])
         yrange = numpy.arange(*self.settings['yrange'])
         zrange = numpy.arange(*self.settings['zrange'])
@@ -64,6 +64,10 @@ class MotorScanWorker(AsyncWorker):
                                 self.result[ch][(x, y, z)] = numpy.sum(v)
                             else:
                                 self.result[ch][(x, y, z)] = t, v
+
+                        if core.hv_source is not None:
+                            i = core.hv_source.get_current()[1]
+                            self.result['currents'][(x, y, z)] = i
 
                     current_steps += 1
                     core.measurement_state = current_steps, total_steps

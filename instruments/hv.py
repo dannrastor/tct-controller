@@ -1,10 +1,14 @@
 import logging
 import time
+import threading
 from utils.config import *
 
 class HVSource:
 
     def __init__(self, resource_manager):
+
+        self.lock = threading.Lock()
+
         try:
             _config = config['instruments']['hv']
 
@@ -46,11 +50,15 @@ class HVSource:
         self.hv.write(f'SOUR:VOLT:IMM {v}')
 
     def is_on(self):
+
         return bool(int(self.hv.query('OUTPUT?')))
 
     def get_current(self):
+
         if self.is_on():
+            time.sleep(0.001)
             self.hv.write('MEAS?')
+            time.sleep(0.01)
             msg = self.hv.read()
             msg = [float(i) for i in msg.split(',')]
             v, i = msg[0], msg[1]

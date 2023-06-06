@@ -315,9 +315,10 @@ class HVWidget(QGroupBox):
 
     def meas(self):
         if core.hv_source is not None:
-            v, i = core.hv_source.get_current()
-            self.state_label.setText('ON' if core.hv_source.is_on() else 'OFF')
-            self.iv_label.setText(f'{v:.2f} V; {i / 1e-6:.3f} uA')
+            with core.hv_source.lock:
+                v, i = core.hv_source.get_current()
+                self.state_label.setText('ON' if core.hv_source.is_on() else 'OFF')
+                self.iv_label.setText(f'{v:.2f} V; {i / 1e-6:.3f} uA')
         else:
             self.state_label.setText('Unconnected')
 

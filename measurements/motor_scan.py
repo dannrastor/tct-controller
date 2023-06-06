@@ -66,7 +66,8 @@ class MotorScanWorker(AsyncWorker):
                                 self.result[ch][(x, y, z)] = t, v
 
                         if core.hv_source is not None:
-                            i = core.hv_source.get_current()[1]
+                            with core.hv_source.lock:
+                                i = core.hv_source.get_current()[1]
                             self.result['currents'][(x, y, z)] = i
 
                     current_steps += 1

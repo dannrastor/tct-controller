@@ -8,49 +8,60 @@ class ExternalControlWorker(AsyncWorker):
 
     description = 'Remote control via network'
 
+
     def action(self):
 
         # Initialize a socket, listening for a connection
-        host = socket.gethostname()
-        port = config['remote_port']
-        server_socket = socket.socket()
-        server_socket.bind((host, port))
+        self.host = socket.gethostname()
+        self.port = config['remote_port']
+        self.server_socket = socket.socket()
+        self.server_socket.bind((self.host, self.port))
 
+        self.wait()
+
+    def wait(self):
         # Listen for a connection but check for interrupt request from time to time
-        server_socket.settimeout(0.5)
-        conn, address = None, None
+        self.server_socket.settimeout(0.5)
+        self.conn, self.address = None, None
         logging.info("Waiting for a client...")
         while True:
             if QThread.currentThread().isInterruptionRequested():
-                server_socket.close()
+                self.server_socket.close()
                 return
             try:
-                server_socket.listen(1)
-                conn, address = server_socket.accept()  # accept new connection
-                logging.info("Connection from: " + str(address))
-                break
+                self.server_socket.listen(1)
+                self.conn, self.address = self.server_socket.accept()  # accept new connection
+                logging.info("Connection from: " + str(self.address))
+                self.get_messages()
+
             except socket.timeout:
                 pass
 
+
+
+    def get_messages(self):
         # Listen for data but check for interrupt request from time to time
-        conn.settimeout(0.5)
+        self.conn.settimeout(0.5)
         while True:
             if QThread.currentThread().isInterruptionRequested():
-                server_socket.close()
-                conn.close()
+                self.server_socket.close()
+                self.conn.close()
                 return
             try:
-                data = conn.recv(4096).decode()
+                data = self.conn.recv(4096).decode()
                 if data:
                     msg = str(data)
                     logging.info(f'from connected user: {msg}')
                     self.process_message(msg)
             except socket.timeout:
                 pass
+            except OSError:
+                return
 
     def process_message(self, msg):
         if msg == 'stop':
-            QThread.currentThread().requestInterruption()
+            self.conn.close()
+            logging.info('Client is gone, waiting for new ones')
 
         if msg.startswith('move'):
             xyz = msg.split(' ')[1:]

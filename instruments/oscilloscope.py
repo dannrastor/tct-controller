@@ -108,7 +108,7 @@ class Oscilloscope:
         text_waveform = text_waveform[1:-1]
         text_waveform = [item.split() for item in text_waveform]
         text_waveform = list(itertools.chain.from_iterable(text_waveform))
-        return numpy.array([float(i) for i in text_waveform])
+        return numpy.array([float32(i) for i in text_waveform])
 
     def _parse_raw_waveform(self, msg):
         """
@@ -135,12 +135,12 @@ class Oscilloscope:
         t_offset = numpy.fromstring(msg[180:188], dtype=numpy.float64)
 
         # extract the waveform data, scale, and offset
-        v = numpy.fromstring(msg[346:], dtype=numpy.int16, count=nb).astype(numpy.float)
+        v = numpy.fromstring(msg[346:], dtype=numpy.int16, count=nb).astype(numpy.float64)
         v *= v_gain
         v -= v_offset
 
         # extract the time data, scale, and offset
-        t = numpy.arange(nb, dtype=numpy.float)
+        t = numpy.arange(nb, dtype=numpy.float64)
         t *= t_gain
         t += t_offset
 

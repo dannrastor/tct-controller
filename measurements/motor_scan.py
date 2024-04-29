@@ -1,5 +1,6 @@
 import os
 import pickle
+import time
 
 import numpy
 from PyQt5.QtWidgets import *
@@ -51,7 +52,7 @@ class MotorScanWorker(AsyncWorker):
                         while core.motors.is_moving('x') or core.motors.is_moving('y') or core.motors.is_moving('z'):
                             time.sleep(0.05)
 
-                        time.sleep(0.5)
+                        time.sleep(0.4)
 
                     # self.result[(x, y, z)] = {}
                     for ch in self.settings['channels']:
@@ -69,7 +70,7 @@ class MotorScanWorker(AsyncWorker):
                             with core.hv_source.lock:
                                 i = core.hv_source.get_current()[1]
                             self.result['currents'][(x, y, z)] = i
-
+                    time.sleep(0.2)
                     current_steps += 1
                     core.measurement_state = current_steps, total_steps
         self.save_data()

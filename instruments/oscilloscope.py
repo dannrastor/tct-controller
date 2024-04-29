@@ -57,12 +57,15 @@ class Oscilloscope:
 
         # Try to reset trigger if it is stuck
         if ch in self.cached_waveform:
-            while (self.cached_waveform[ch][1] == data[1]).all():
-                # np.array.all is used cause result of np.array comparison is also an array
-                logging.info('Trigger failure detected')
-                self.unstuck()
-                raw_wf = self._get_raw_waveform(ch)
-                data = self._parse_raw_waveform(raw_wf)
+            try:
+                while (self.cached_waveform[ch][1] == data[1]).all():
+                    # np.array.all is used cause result of np.array comparison is also an array
+                    logging.info('Trigger failure detected')
+                    self.unstuck()
+                    raw_wf = self._get_raw_waveform(ch)
+                    data = self._parse_raw_waveform(raw_wf)
+            except:
+                pass
 
         self.cached_waveform[ch] = data
         return data
